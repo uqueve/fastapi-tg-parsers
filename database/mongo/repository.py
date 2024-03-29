@@ -1,8 +1,5 @@
 from bson import ObjectId
-from pymongo.collection import Collection
 from pymongo.database import Database
-from pymongo.errors import WriteError
-from pymongo.results import InsertOneResult
 
 from utils.models import Post
 
@@ -43,7 +40,7 @@ class NewsRepository:
         collection = self.connection['news']
         collection.update_one(
             filter={'_id': ObjectId(news_id)},
-            update={'posted': True})
+            update={'$set': {'posted': True}})
 
     def update_news_set_read(self, news_ids_list: list):
         collection = self.connection['news']
