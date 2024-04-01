@@ -30,6 +30,7 @@ async def parse_news():
             parser_obj: BaseParser = get_parser_object[city]
             news_posts: list[Post] = await parser_obj.get_new_news(max_news=3)
             for post in news_posts:
+                # TODO: AttributeError: 'list' object has no attribute 'link'
                 if not mongo.is_news_exists_by_link(link=post.link):
                     post.city = city
                     inserted_id = mongo.add_one_news(post=post)

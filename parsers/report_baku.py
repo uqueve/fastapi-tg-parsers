@@ -15,6 +15,7 @@ class ReportBakuParser(BaseParser):
     name = 'report'
     __base_url = 'https://report.az'
     __news_url = __base_url + '/ru/news-feed/'
+    referer = 'https://report.az/ru/'
 
     async def get_new_news(self, last_news_date=None, max_news=10) -> [Post]:
         response = await self._make_async_request(self.__news_url, json=True)
@@ -54,7 +55,7 @@ class ReportBakuParser(BaseParser):
         return posts
 
     async def get_new(self, url):
-        response = await self._make_async_request(url)
+        response = await self._make_async_request(url, referer=self.referer)
 
         if not response:
             print(f"Ошибка запроса {__name__}")

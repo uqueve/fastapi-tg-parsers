@@ -15,6 +15,7 @@ class InalmatyAlmataParser(BaseParser):
     name = 'inalmaty'
     __base_url = 'https://www.inalmaty.kz/'
     __news_url = __base_url + 'news'
+    referer = 'https://www.inalmaty.kz/news'
 
     async def get_new_news(self, last_news_date=None, max_news=10) -> [Post]:
         response = await self._make_async_request(self.__news_url)
@@ -66,7 +67,7 @@ class InalmatyAlmataParser(BaseParser):
         return posts
 
     async def get_new(self, url):
-        response = await self._make_async_request(url)
+        response = await self._make_async_request(url, referer=self.referer)
 
         if not response:
             print(f"Ошибка запроса {__name__}")

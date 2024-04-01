@@ -14,6 +14,7 @@ class MgorodUralskParser(BaseParser):
     name = 'tallin'
     __base_url = 'https://www.tallinn.ee/'
     __news_url = __base_url + 'ru/%D0%BD%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D0%B8'
+    referer = 'https://www.tallinn.ee/ru/%D0%BD%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D0%B8'
 
     async def get_new_news(self, last_news_date=None, max_news=3) -> [Post]:
         response = await self._make_async_request(self.__news_url)
@@ -57,7 +58,7 @@ class MgorodUralskParser(BaseParser):
         return posts
 
     async def get_new(self, url):
-        response = await self._make_async_request(url)
+        response = await self._make_async_request(url, referer=self.referer)
 
         if not response:
             print(f"Ошибка запроса {__name__}")

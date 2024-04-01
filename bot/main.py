@@ -11,6 +11,7 @@ from utils.text_sevice import chunks_to_text, correct_caption_len
 
 
 async def send_news(post: Post, channel_tg_id, mongo):
+    # TODO: set convert_with_ai=True
     media_chunks = CustomMediaChunks(post, translate=False, convert_with_ai=False)
     media = media_chunks.get_media()
     chunks = media_chunks.get_text_chunks()
@@ -48,7 +49,7 @@ async def send_message(text: str, channel_id: int):
             'parse_mode': 'HTML'
             }
     async with aiohttp.request(method='POST', url=url, json=data) as response:
-        print(await response.json())
+        ...
 
 
 async def send_photo(caption: str, photo: str, channel_id: int):
@@ -62,8 +63,8 @@ async def send_photo(caption: str, photo: str, channel_id: int):
     async with aiohttp.request(method='POST', url=url, json=data) as response:
         response = await response.json()
         if not response['ok']:
-            ...
-        print(response)
+            print(response)
+        ...
 
 
 async def send_media_group(media: list[dict], channel_id: int):
@@ -73,7 +74,7 @@ async def send_media_group(media: list[dict], channel_id: int):
             'media': json.dumps(media)
             }
     async with aiohttp.request(method='POST', url=url, json=data) as response:
-        print(await response.json())
+        ...
 
 
 if __name__ == '__main__':

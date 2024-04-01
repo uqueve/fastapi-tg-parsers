@@ -1,4 +1,6 @@
 import asyncio
+import pprint
+import random
 
 import dateparser
 from dateutil import parser
@@ -14,6 +16,8 @@ class MgorodUralskParser(BaseParser):
     name = 'mgorod'
     __base_url = 'https://mgorod.kz/'
     __news_url = __base_url + 'nlocation/uralsk/'
+    referer = 'https://mgorod.kz/nlocation/uralsk/'
+    # TODO: 403 Enable JavaScript and cookies to continue Just a moment...
 
     async def get_new_news(self, last_news_date=None, max_news=3) -> [Post]:
         response = await self._make_async_request(self.__news_url)
@@ -41,7 +45,7 @@ class MgorodUralskParser(BaseParser):
         for url in urls:
             try:
                 post = await self.get_new(url)
-                await asyncio.sleep(1)
+                await asyncio.sleep(random.choice(range(5)))
             except Exception as ex:
                 print(ex)
                 continue
@@ -54,10 +58,11 @@ class MgorodUralskParser(BaseParser):
             if len(posts) >= max_news:
                 break
 
+        # pprint.pprint(posts, indent=2)
         return posts
 
     async def get_new(self, url):
-        response = await self._make_async_request(url)
+        response = await self._make_async_request(url, referer=self.referer)
 
         if not response:
             print(f"Ошибка запроса {__name__}")
@@ -101,5 +106,4 @@ class MgorodUralskParser(BaseParser):
 
 
 if __name__ == '__main__':
-    posts = MgorodUralskParser().get_new_news()
-    print(posts)
+    asyncio.run(MgorodUralskParser().get_new_news())

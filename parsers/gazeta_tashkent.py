@@ -15,6 +15,9 @@ class GazetaTashkentParser(BaseParser):
     name = 'gazeta'
     __base_url = 'https://www.gazeta.uz/'
     __news_url = __base_url + 'ru/'
+    referer = 'https://www.gazeta.uz/ru/'
+    # TODO: 503 Service Temporarily Unavailable
+    #  'str' object has no attribute 'text'
 
     async def get_new_news(self, last_news_date=None, max_news=10) -> [Post]:
         response = await self._make_async_request(self.__news_url)
@@ -54,10 +57,11 @@ class GazetaTashkentParser(BaseParser):
             if len(posts) >= max_news:
                 break
 
+        pprint.pprint(posts, indent=2)
         return posts
 
     async def get_new(self, url):
-        response = await self._make_async_request(url)
+        response = await self._make_async_request(url, referer=self.referer)
 
         if not response:
             print(f"Ошибка запроса {__name__}")
