@@ -18,7 +18,7 @@ headers = {
     'sec-ch-ua-platform': '"Linux"',
     'sec-fetch-dest': 'document',
     'sec-fetch-mode': 'navigate',
-    'sec-fetch-site': 'cross-site',
+    'sec-fetch-site': 'same-origin',
     'sec-fetch-user': '?1',
     'sec-gpc': '1',
     'upgrade-insecure-requests': '1',
@@ -26,11 +26,11 @@ headers = {
 }
 
 
-class UlanUdeParser(BaseParser):
+class NovokuznetskParser(BaseParser):
     name = 'ulanude'
-    __base_url = 'https://m.baikal-daily.ru'
+    __base_url = 'https://novokuznetsk.su'
     __news_url = __base_url
-    referer = 'https://m.baikal-daily.ru/'
+    referer = 'https://novokuznetsk.su/'
 
     async def get_new_news(self, last_news_date=None, max_news=3) -> [Post]:
         response = await self._make_async_request(self.__news_url, headers=headers)
@@ -43,10 +43,10 @@ class UlanUdeParser(BaseParser):
         soup = BeautifulSoup(response, 'lxml')
 
         urls = []
-        div = soup.find('div', attrs={'id': 'news_list_left_first'})
-        news = div.find_all('div', class_=lambda value: value.startswith('news-item news-item'))
+        div = soup.find('div', class_='grid grid-cols-1 md:grid-cols-2 gap-6')
+        news = div.find_all('a')
         for new in news:
-            url = self.__base_url + new.find_next('a').get('href')
+            url = self.__base_url + new.get('href')
             urls.append(url)
 
         for url in urls:
@@ -75,7 +75,7 @@ class UlanUdeParser(BaseParser):
 
         soup = BeautifulSoup(response, 'lxml')
 
-        main_block = soup.find('article', class_='news-detail')
+        main_block = soup.find('div', class_='text-2sm')
 
         if not main_block:
             return None
@@ -88,20 +88,18 @@ class UlanUdeParser(BaseParser):
         date = datetime.now(tz=timezone.utc)
 
         content = ""
-        content_div = main_block.find('div', class_='news-text')
 
-        if not content_div:
-            return None
-
-        content += content_div.text.replace('\xa0', ' ').replace('\r\n', '').strip()
+        contents = main_block.find_all('p')
+        for con in contents:
+            content += con.text.replace('\xa0', ' ').strip() + '\n'
         if 'Erid' in content:
             return None
 
         image_urls = []
-        photo_div = main_block.find('img', class_='preview_picture')
+        photo_div = main_block.find('img')
 
         if photo_div:
-            photo = self.__base_url + photo_div.get('src')
+            photo = photo_div.get('src')
             image_urls.append(photo)
 
         post = Post(title=title, body=content, image_links=image_urls, date=date, link=url)
@@ -109,4 +107,4 @@ class UlanUdeParser(BaseParser):
 
 
 if __name__ == '__main__':
-    asyncio.run(UlanUdeParser().get_new_news())
+    asyncio.run(NovokuznetskParser().get_new_news())

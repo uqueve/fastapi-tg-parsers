@@ -3,11 +3,7 @@ import json
 import pprint
 import random
 
-import aiohttp
-import dateparser
-import requests
 from bs4 import BeautifulSoup
-
 from datetime import datetime, timezone
 
 from utils.models import Post
@@ -39,11 +35,8 @@ class TallinTallinParser(BaseParser):
     referer = 'https://ria.ru/amp/location_Tallinn/'
 
     async def get_new_news(self, last_news_date=None, max_news=3) -> [Post]:
-        # async with aiohttp.request(method='GET', url='https://ria.ru/amp/location_Tallinn/', headers=headers) as response:
-        #     print(await response.text())
         response = await self._make_async_request(self.__news_url, headers=headers, json=True)
         posts = []
-        # print(response)
 
         if not response:
             print(f"Ошибка запроса {__name__}")
