@@ -18,7 +18,7 @@ headers = {
     'sec-ch-ua-platform': '"Linux"',
     'sec-fetch-dest': 'document',
     'sec-fetch-mode': 'navigate',
-    'sec-fetch-site': 'same-origin',
+    'sec-fetch-site': 'cross-site',
     'sec-fetch-user': '?1',
     'sec-gpc': '1',
     'upgrade-insecure-requests': '1',
@@ -26,11 +26,11 @@ headers = {
 }
 
 
-class NovokuznetskParser(BaseParser):
-    name = 'novokuznetsk'
-    __base_url = 'https://novokuznetsk.su'
-    __news_url = __base_url
-    referer = 'https://novokuznetsk.su/'
+class AstrahanParser(BaseParser):
+    name = 'astrahan'
+    __base_url = 'https://ast.mk.ru'
+    __news_url = __base_url + '/news/'
+    referer = 'https://ast.mk.ru/'
 
     async def get_new_news(self, last_news_date=None, max_news=3) -> [Post]:
         response = await self._make_async_request(self.__news_url, headers=headers)
@@ -43,10 +43,11 @@ class NovokuznetskParser(BaseParser):
         soup = BeautifulSoup(response, 'lxml')
 
         urls = []
-        div = soup.find('div', class_='grid grid-cols-1 md:grid-cols-2 gap-6')
-        news = div.find_all('a')
+        today_news_block = soup.find('ul', class_='news-listing__day-list')
+        news = today_news_block.find_all('a', class_='news-listing__item-link')
+
         for new in news:
-            url = self.__base_url + new.get('href')
+            url = new.get('href')
             urls.append(url)
 
         for url in urls:
@@ -63,7 +64,7 @@ class NovokuznetskParser(BaseParser):
 
             if len(posts) >= max_news:
                 break
-
+        print(posts)
         return posts
 
     async def get_new(self, url):
@@ -75,13 +76,13 @@ class NovokuznetskParser(BaseParser):
 
         soup = BeautifulSoup(response, 'lxml')
 
-        main_block = soup.find('div', class_='text-2sm')
+        main_block = soup.find('main', class_='article')
 
         if not main_block:
             return None
 
         try:
-            title = main_block.find('h1').text.strip()
+            title = main_block.find('h1', class_='article__title').text.strip()
         except AttributeError:
             return None
 
@@ -89,14 +90,15 @@ class NovokuznetskParser(BaseParser):
 
         content = ""
 
-        contents = main_block.find_all('p')
+        contents_div = main_block.find('div', class_='article__body')
+        contents = contents_div.find_all('p')
         for con in contents:
             content += con.text.replace('\xa0', ' ').strip() + '\n'
         if 'Erid' in content:
             return None
 
         image_urls = []
-        photo_div = main_block.find('img')
+        photo_div = main_block.find('img', class_='article__picture-image')
 
         if photo_div:
             photo = photo_div.get('src')
@@ -107,4 +109,4 @@ class NovokuznetskParser(BaseParser):
 
 
 if __name__ == '__main__':
-    asyncio.run(NovokuznetskParser().get_new_news())
+    asyncio.run(AstrahanParser().get_new_news())
