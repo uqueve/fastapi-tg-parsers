@@ -59,7 +59,7 @@ class BaseParser:
     def get_new_news(self, last_news_date=None, max_news=100) -> [Post]:
         pass
 
-    async def _make_async_request(self, url, headers=None, json: bool = False, referer: str = None) -> Any:
+    async def _make_async_request(self, url, headers=None, cookies=None, json: bool = False, referer: str = None) -> Any:
         if not headers:
             headers = self.headers
             if referer:
@@ -72,7 +72,7 @@ class BaseParser:
                 if response.status != 200:
                     logging.warning(f'### {response.status} - {url}. {await response.text()}')
                     logging.info('Trying request with proxies')
-                    return await self.__make_async_request_with_proxies(url=url, json=json)
+                    # return await self.__make_async_request_with_proxies(url=url, json=json)
                 if not json:
                     return await response.text()
                 else:
@@ -80,7 +80,7 @@ class BaseParser:
         except Exception as e:
             logging.warning(
                 f'\t\t- Warning! the standard request error in {self.name} parser: {e}, make proxie request.')
-            return await self.__make_async_request_with_proxies(url=url)
+            # return await self.__make_async_request_with_proxies(url=url)
 
     async def __make_async_request_with_proxies(self, url, headers=None, json: bool = False) -> Any:
         # TODO: aiohttp/connector.py:909: RuntimeWarning: An HTTPS request is being sent through an HTTPS proxy.

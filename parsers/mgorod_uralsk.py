@@ -13,7 +13,7 @@ from parsers.base_parser import BaseParser
 
 
 class MgorodUralskParser(BaseParser):
-    name = 'mgorod'
+    name = 'uralsk'
     __base_url = 'https://mgorod.kz/'
     __news_url = __base_url + 'nlocation/uralsk/'
     referer = 'https://mgorod.kz/nlocation/uralsk/'

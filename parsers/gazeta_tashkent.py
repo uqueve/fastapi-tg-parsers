@@ -1,8 +1,8 @@
 import asyncio
 import pprint
+import random
 
 import dateparser
-from dateutil import parser
 from bs4 import BeautifulSoup
 
 from datetime import datetime, timezone
@@ -12,7 +12,7 @@ from parsers.base_parser import BaseParser
 
 
 class GazetaTashkentParser(BaseParser):
-    name = 'gazeta'
+    name = 'tashkent'
     __base_url = 'https://www.gazeta.uz/'
     __news_url = __base_url + 'ru/'
     referer = 'https://www.gazeta.uz/ru/'
@@ -44,7 +44,7 @@ class GazetaTashkentParser(BaseParser):
         for url in urls:
             try:
                 post = await self.get_new(url)
-                await asyncio.sleep(1)
+                await asyncio.sleep(random.choice(range(5)))
             except Exception as ex:
                 print(ex)
                 continue
@@ -60,7 +60,7 @@ class GazetaTashkentParser(BaseParser):
         pprint.pprint(posts, indent=2)
         return posts
 
-    async def get_new(self, url):
+    async def get_new(self, url: str):
         response = await self._make_async_request(url, referer=self.referer)
 
         if not response:
@@ -94,12 +94,6 @@ class GazetaTashkentParser(BaseParser):
 
         post = Post(title=title, body=content, image_links=image_urls, date=date, link=url)
         return post
-
-    def parse_date(self, date_text: str):
-        date = ' '.join(date_text.split())
-        date = dateparser.parse(date, languages=['ru'])
-        date = date.replace(tzinfo=timezone.utc)
-        return date
 
 
 if __name__ == '__main__':

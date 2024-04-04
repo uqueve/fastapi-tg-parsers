@@ -14,13 +14,9 @@ logger = logging.getLogger(__name__)
 
 async def start_parsers():
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(parse_and_send_posts, 'interval', minutes=3)
+    scheduler.add_job(parse_news, 'interval', minutes=3)
+    scheduler.add_job(post_news, 'interval', minutes=3)
     scheduler.start()
-
-
-async def parse_and_send_posts():
-    await parse_news()
-    await post_news()
 
 
 async def parse_news():

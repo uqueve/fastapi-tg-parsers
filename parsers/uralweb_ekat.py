@@ -1,4 +1,5 @@
 import asyncio
+import random
 
 import dateparser
 from dateutil import parser
@@ -11,7 +12,7 @@ from parsers.base_parser import BaseParser
 
 
 class UralwebEkatParser(BaseParser):
-    name = 'uralweb'
+    name = 'ekaterinburg'
     __base_url = 'https://www.uralweb.ru/'
     __news_url = __base_url + 'news/'
     referer = 'https://www.uralweb.ru/news/'
@@ -41,7 +42,7 @@ class UralwebEkatParser(BaseParser):
         for url in urls:
             try:
                 post = await self.get_new(url)
-                await asyncio.sleep(1)
+                await asyncio.sleep(random.choice(range(5)))
             except Exception as ex:
                 print(ex)
                 continue

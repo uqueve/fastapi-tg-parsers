@@ -1,5 +1,6 @@
 import asyncio
 import pprint
+import random
 
 import dateparser
 from dateutil import parser
@@ -12,7 +13,7 @@ from parsers.base_parser import BaseParser
 
 
 class ReportBakuParser(BaseParser):
-    name = 'report'
+    name = 'baku'
     __base_url = 'https://report.az'
     __news_url = __base_url + '/ru/news-feed/'
     referer = 'https://report.az/ru/'
@@ -39,7 +40,7 @@ class ReportBakuParser(BaseParser):
         for url in urls:
             try:
                 post = await self.get_new(url)
-                await asyncio.sleep(1)
+                await asyncio.sleep(random.choice(range(5)))
             except Exception as ex:
                 print(ex)
                 continue
