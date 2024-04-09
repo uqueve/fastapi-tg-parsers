@@ -1,4 +1,5 @@
 import datetime as dt
+from dataclasses import dataclass
 from typing import List, Optional
 
 from bson import ObjectId
@@ -15,41 +16,39 @@ class SiteModel(StrEnum):
     ALMATA = auto()
     TASHKENT = auto()
     BAKU = auto()
+    ASTRAHAN = auto()
+    CHITA = auto()
+    NOVOKUZNETSK = auto()
+    ULANUDE = auto()
+    TALLIN = auto()
+
+
+@dataclass
+class CitySchema:
+    oid: str
+    name: str
+    ru: str
+
+    def to_dict(self):
+        return {'oid': self.oid, 'name': self.name, 'ru': self.ru}
 
 
 class News(BaseModel):
     ids: list[str]
 
 
-class PydanticObjectId(ObjectId):
-    """
-    ObjectId field. Compatible with Pydantic.
-    """
-
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, v, c):
-        return PydanticObjectId(v)
-
-    @classmethod
-    def __get_pydantic_json_schema__(cls, field_schema: dict, c=None):
-        field_schema.update(
-            type="string",
-            examples=["5eb7cf5a86d9755df3a6c593", "5eb7cfb05e32e07750a1756a"],
-        )
+class ErrorSchema(BaseModel):
+    error: str
 
 
 class Post(BaseModel):
-    id: Optional[PydanticObjectId] | str | None = Field(None, alias='_id')
+    oid: str | None = Field(None, alias='oid')
     title: str | None = Field(default='')
     body: str | None = Field(default='')
     image_links: List[str] | None = Field(default=[])
     date: dt.datetime | None = Field(default=dt.datetime.now())
     link: str | None = Field(default='')
-    city: SiteModel | None = Field(default=None)
+    city: CitySchema | None = Field(default=None)
     parser_name: str = Field(default='')
     posted: bool = Field(default=False)
     sent: bool = Field(default=False)
@@ -85,13 +84,13 @@ class Post(BaseModel):
 
 
 class PostOut(BaseModel):
-    id: str = Field(alias='_id')
+    oid: str = Field(alias='oid')
     title: str | None = Field(default='')
     body: str | None = Field(default='')
     image_links: List[str] | None = Field(default=[])
     date: str | None = Field(default='')
     link: str | None = Field(default='')
-    city: SiteModel | None = Field(default=None)
+    city: CitySchema = Field(alias='city')
     parser_name: str = Field(default='')
     posted: bool = Field(default=False)
     sent: bool = Field(default=False)

@@ -1,4 +1,5 @@
 import os
+from functools import lru_cache
 
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
@@ -6,7 +7,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
 
-    DB_ADDRESS: str = ''
+    DB_HOST: str = ''
     DB_PORT: str = ''
     DB_URL: str = ''
     DB_NAME: str = ''
@@ -27,7 +28,7 @@ class Settings(BaseSettings):
 def setup_settings():
     settings = Settings()
     load_dotenv()
-    settings.DB_ADDRESS = os.getenv('MONGO_ADDRESS')
+    settings.DB_HOST = os.getenv('MONGO_HOST')
     settings.DB_PORT = os.getenv('MONGO_PORT')
     settings.DB_URL = os.getenv("MONGO_URL", "")
     settings.DB_NAME = os.getenv("MONGO_DB", "")
@@ -37,7 +38,6 @@ def setup_settings():
     settings.DB_PASS = os.getenv("MONGO_PASS")
 
     settings.TG_BOT_TOKEN = os.environ.get("BOT_TOKEN")
-    # settings.ADMIN_IDS = [_id for _id in os.environ.get('ADMIN_IDS').replace("'", "").split(',')]
     settings.ADMIN_IDS = os.environ.get('ADMIN_IDS')
     settings.TARGET_CHAT_ID = os.environ.get('TARGET_CHAT_IDS')
     settings.DISCUSSION_CHAT_ID = os.environ.get('DISCUSSION_CHAT_ID')
@@ -47,4 +47,7 @@ def setup_settings():
     return settings
 
 
-settings = setup_settings()
+@lru_cache
+def get_settings():
+    settings = setup_settings()
+    return settings

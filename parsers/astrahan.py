@@ -64,7 +64,6 @@ class AstrahanParser(BaseParser):
 
             if len(posts) >= max_news:
                 break
-        print(posts)
         return posts
 
     async def get_new(self, url):
@@ -79,11 +78,12 @@ class AstrahanParser(BaseParser):
         main_block = soup.find('main', class_='article')
 
         if not main_block:
-            return None
+            return
 
         try:
             title = main_block.find('h1', class_='article__title').text.strip()
         except AttributeError:
+            print(f'Title not find in {__name__}. URL: {url}')
             return None
 
         date = datetime.now(tz=timezone.utc)
@@ -95,7 +95,7 @@ class AstrahanParser(BaseParser):
         for con in contents:
             content += con.text.replace('\xa0', ' ').strip() + '\n'
         if 'Erid' in content:
-            return None
+            return
 
         image_urls = []
         photo_div = main_block.find('img', class_='article__picture-image')

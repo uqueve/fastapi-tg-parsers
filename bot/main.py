@@ -37,8 +37,8 @@ async def send_news(post: Post, channel_tg_id, mongo):
             caption = correct_caption_len(caption)
         await send_message(channel_id=channel_tg_id, text=caption)
 
-    mongo.update_news_set_posted(news_id=post.id)
-    mongo.update_news_body_ai(news_id=post.id, body=post.body)
+    mongo.update_news_set_posted(news_id=post.oid)
+    mongo.update_news_body_ai(news_id=post.oid, body=post.body)
 
 
 async def send_message(text: str, channel_id: int):

@@ -57,7 +57,6 @@ class GazetaTashkentParser(BaseParser):
             if len(posts) >= max_news:
                 break
 
-        pprint.pprint(posts, indent=2)
         return posts
 
     async def get_new(self, url: str):
@@ -65,18 +64,16 @@ class GazetaTashkentParser(BaseParser):
 
         if not response:
             print(f"Ошибка запроса {__name__}")
-            return None
+            return
 
         soup = BeautifulSoup(response, 'lxml')
+        try:
+            title = soup.find('h1', attrs={'id': 'article_title'}).text.replace('\xa0', ' ').strip()
+        except AttributeError:
+            print(f'Title not find in {__name__}. URL: {url}')
+            return None
 
-        title = soup.find('h1', attrs={'id': 'article_title'}).text.replace('\xa0', ' ').strip()
-
-        # date_tag = soup.find('div', class_='articleDateTime').text.strip().split('\n')[0]
-        # date = self.parse_date(date_tag)
         date = datetime.now(tz=timezone.utc)
-
-        # if not self.check_is_new_news(last_news_date, date):
-        #     return None
 
         content = ""
 

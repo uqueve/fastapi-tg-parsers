@@ -15,12 +15,13 @@ def get_unread_news():
         try:
             news_obj = Post(**new)
             post_out = PostOut(
-                _id=str(news_obj.id),
+                oid=news_obj.oid,
                 title=news_obj.title,
                 body=news_obj.body,
                 image_links=news_obj.image_links,
                 date=news_obj.date.strftime("'%d.%m.%Y %H:%M:%S"),
-                link=news_obj.link
+                link=news_obj.link,
+                city=news_obj.city
             )
             news_list.append(post_out)
         except Exception:

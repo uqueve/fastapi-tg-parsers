@@ -1,7 +1,7 @@
 from bson import ObjectId
 from pymongo.database import Database
 
-from utils.models import Post
+from utils.models import Post, SiteModel
 
 
 class NewsRepository:
@@ -12,6 +12,16 @@ class NewsRepository:
         collection = self.connection['cities']
         city = collection.find_one(filter={'name': city_name})
         return city.get('id')
+
+    def get_city_data_by_city(self, city: SiteModel):
+        collection = self.connection['cities']
+        city_data = collection.find_one(filter={'name': str(city)})
+        return city_data
+
+    def _get_all_cities(self):
+        collection = self.connection['cities']
+        city_data = collection.find()
+        return city_data
 
     def get_city_tg_id_by_name(self, city_name):
         collection = self.connection['cities']
@@ -30,7 +40,7 @@ class NewsRepository:
 
     def get_one_not_sent_news(self, city) -> Post | None:
         collection = self.connection['news']
-        _post = collection.find_one(filter={'city': city, 'posted': False})
+        _post = collection.find_one(filter={'city.name': str(city), 'posted': False})
         if _post:
             return Post(**_post)
         else:
@@ -39,22 +49,22 @@ class NewsRepository:
     def update_news_set_posted(self, news_id: str):
         collection = self.connection['news']
         collection.update_one(
-            filter={'_id': ObjectId(news_id)},
+            filter={'oid': news_id},
             update={'$set': {'posted': True}})
 
     def update_news_set_read(self, news_ids_list: list):
         collection = self.connection['news']
         collection.update_many(
-            filter={"_id": {"$in": news_ids_list}},
+            filter={"oid": {"$in": news_ids_list}},
             update={'$set': {"sent": True}})
 
     def update_news_body_ai(self, body, news_id):
         collection = self.connection['news']
-        collection.update_one(filter={"_id": news_id}, update={'$set': {"body": body}})
+        collection.update_one(filter={"oid": news_id}, update={'$set': {"body": body}})
 
     def get_unread_news(self):
         collection = self.connection['news']
-        return collection.find(filter={"sent": False, "posted": True})
+        return collection.find(filter={"sent": False, "posted": True}).sort('date')
 
     def _get_one_news(self):
         collection = self.connection['news']
@@ -68,6 +78,6 @@ class NewsRepository:
         collection = self.connection['news']
         return collection.find()
 
-    def _get_news_by_id(self, _id):
+    def _get_news_by_id(self, oid):
         collection = self.connection['news']
-        return collection.find_one(filter={'_id': ObjectId(_id)})
+        return collection.find_one(filter={'oid': oid})

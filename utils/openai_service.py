@@ -7,12 +7,13 @@ import requests
 from aiohttp import ClientTimeout
 from openai import OpenAI
 
-import config_data.config
+from config_data.config import get_settings
 
 
 class OpenAIService:
     def __init__(self):
-        self.api_key = config_data.config.settings.OPENAI_KEY
+        settings = get_settings()
+        self.api_key = settings.OPENAI_KEY
         self.url = 'https://api.openai.com/v1/engines/gpt-3.5-turbo/completions'
         self.headers = {
             'Content-Type': 'application/json',

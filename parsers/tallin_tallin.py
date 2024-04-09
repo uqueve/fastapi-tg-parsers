@@ -75,6 +75,7 @@ class TallinTallinParser(BaseParser):
         try:
             title = soup.find(['div', 'h1'], class_='article__title').text.strip()
         except AttributeError:
+            print(f'Title not find in {__name__}. URL: {url}')
             return None
 
         date = datetime.now(tz=timezone.utc)

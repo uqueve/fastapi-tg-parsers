@@ -24,33 +24,23 @@ class BaseParser:
 
     # proxies = [
     #     {
-    #         'http': 'http://EVBZEn:QwqX7v@46.3.147.105:8000',
+    #         'url': 'http://46.3.147.105:8000',
+    #         'login': 'EVBZEn',
+    #         'pass': 'QwqX7v'
     #     },
     #     {
-    #         'http': 'http://oaF9Fm:Yj4Tr3@88.218.73.67:9886',
+    #         'url': 'http://88.218.73.67:9886',
+    #         'login': 'oaF9Fm',
+    #         'pass': 'Yj4Tr3'
     #     },
     #     {
-    #         'http': 'http://oaF9Fm:Yj4Tr3@88.218.75.9:9658',
+    #         'url': 'http://88.218.75.9:9658',
+    #         'login': 'oaF9Fm',
+    #         'pass': 'Yj4Tr3'
     #     }
     # ]
 
-    proxies = [
-        {
-            'url': 'http://46.3.147.105:8000',
-            'login': 'EVBZEn',
-            'pass': 'QwqX7v'
-        },
-        {
-            'url': 'http://88.218.73.67:9886',
-            'login': 'oaF9Fm',
-            'pass': 'Yj4Tr3'
-        },
-        {
-            'url': 'http://88.218.75.9:9658',
-            'login': 'oaF9Fm',
-            'pass': 'Yj4Tr3'
-        }
-    ]
+    proxies = []
 
     def __init__(self):
         if self.__base_url not in self.__news_url:
@@ -67,20 +57,20 @@ class BaseParser:
         try:
             # answers = socket.getaddrinfo('grimaldis.myguestaccount.com', 443)
             # (family, type, proto, canonname, (address, port)) = answers[0]
-            timeout = ClientTimeout(total=5)
+            timeout = ClientTimeout(total=6)
             async with aiohttp.request(method='GET', url=url, headers=headers, timeout=timeout) as response:
                 if response.status != 200:
-                    logging.warning(f'### {response.status} - {url}. {await response.text()}')
-                    logging.info('Trying request with proxies')
-                    # return await self.__make_async_request_with_proxies(url=url, json=json)
+                    logging.warning(f'### {response.status}\t{self.name}\t{url}\n{await response.text()}')
+                    if self.proxies:
+                        return await self.__make_async_request_with_proxies(url=url, json=json)
                 if not json:
                     return await response.text()
                 else:
                     return await response.json()
         except Exception as e:
-            logging.warning(
-                f'\t\t- Warning! the standard request error in {self.name} parser: {e}, make proxie request.')
-            # return await self.__make_async_request_with_proxies(url=url)
+            logging.exception(f'Ошибка запроса {self.name}\t{url}')
+            if self.proxies:
+                return await self.__make_async_request_with_proxies(url=url)
 
     async def __make_async_request_with_proxies(self, url, headers=None, json: bool = False) -> Any:
         # TODO: aiohttp/connector.py:909: RuntimeWarning: An HTTPS request is being sent through an HTTPS proxy.
@@ -117,10 +107,9 @@ class BaseParser:
                             return await response.json()
                         return await response.text()
                 except Exception as ee:
-                    logging.warning(
-                        f'\t\t- Warning! the proxie request error in {self.name} parser: {ee}')
+                    logging.exception(f'Ошибка запроса с прокси {self.name}\t{url}')
                     continue
         except Exception as e:
-            logging.error(f'\t\t- Error in {self.name} parser: {e}')
+            logging.exception(f'Ошибка запроса с прокси {self.name}\t{url}')
             return []
         return []

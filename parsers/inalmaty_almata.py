@@ -78,7 +78,11 @@ class InalmatyAlmataParser(BaseParser):
 
         title_ = soup.find('div', class_='article-details__title-container')
 
-        title = title_.text.replace('\xa0', ' ').strip()
+        try:
+            title = title_.text.replace('\xa0', ' ').strip()
+        except AttributeError:
+            print(f'Title not find in {__name__}. URL: {url}')
+            return None
 
         # date_tag = soup.find('div', class_='article-details__date').text
         # date = self.parse_date(date_tag)

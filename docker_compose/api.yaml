@@ -1,0 +1,24 @@
+version: '3.8'
+name: fastapi
+
+services:
+  fastapi:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    env_file:
+      - ../.env
+    volumes:
+      - ..:/app
+    ports:
+      - "1111:8000"
+    restart: unless-stopped
+    container_name: test_parsers.fastapi
+    command: bash -c 
+      "uvicorn --factory api.backend.main:create_app --host 0.0.0.0 --port 8000 --lifespan=on --use-colors --reload"
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge

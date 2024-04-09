@@ -1,21 +1,25 @@
 DC = docker compose
 LOGS = docker logs
-API_CONTAINER = test_parsers.fastapi
+ENV = --env-file .env
 
-hello:
-	echo "hiii"
+API_CONTAINER = test_parsers.fastapi
+APP_FILE = docker_compose/api.yaml
+
+MONGO_CONTAINER = test_parsers.mongodb
+MONGO_FILE = docker_compose/mongo.yml
+
 
 .PHONY: app
 app:
-	${DC} up -d
+	${DC} -f ${APP_FILE} ${ENV} up -d
 
 .PHONY: app-down
 app-down:
-	${DC} down
+	${DC} -f ${APP_FILE} down
 
 .PHONY: app-build
 app-build:
-	${DC} up --build -d
+	${DC} -f ${APP_FILE} up --build -d
 
 .PHONY: app-logs
 app-logs:
@@ -24,3 +28,19 @@ app-logs:
 .PHONY: app-shell
 app-shell:
 	docker exec -it ${API_CONTAINER} bash
+
+.PHONY: mongo
+mongo:
+	${DC} -f ${MONGO_FILE} ${ENV} up --build -d
+
+.PHONY: mongo-down
+mongo-down:
+	${DC} -f ${MONGO_FILE} down
+
+.PHONY: mongo-logs
+mongo-logs:
+	${LOGS} ${MONGO_CONTAINER} -f
+
+.PHONY: mongo-shell
+mongo-shell:
+	docker exec -it ${MONGO_CONTAINER} bash

@@ -16,6 +16,7 @@ class UralwebEkatParser(BaseParser):
     __base_url = 'https://www.uralweb.ru/'
     __news_url = __base_url + 'news/'
     referer = 'https://www.uralweb.ru/news/'
+    # TODO: 'str' object has no attribute 'text'
 
     async def get_new_news(self, last_news_date=None, max_news=10) -> [Post]:
         response = await self._make_async_request(self.__news_url)
@@ -68,17 +69,13 @@ class UralwebEkatParser(BaseParser):
 
         title_ = soup.find('h1')
 
-        if title_:
+        try:
             title = title_.text.replace('\xa0', ' ').strip()
-        else:
+        except AttributeError:
+            print(f'Title not find in {__name__}. URL: {url}')
             return None
 
-        # date_tag = soup.find('time', attrs={'itemprop': 'datePublished'}).get('data-utime')
-        # date = self.parse_date(date_tag)
-
         date = datetime.now(tz=timezone.utc)
-        # if not self.check_is_new_news(last_news_date, date):
-        #     return None
 
         content = ""
         div_c = soup.find('div', class_='n-ict clearfix news-detail-body')

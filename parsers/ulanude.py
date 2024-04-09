@@ -83,6 +83,7 @@ class UlanUdeParser(BaseParser):
         try:
             title = main_block.find('h1').text.strip()
         except AttributeError:
+            print(f'Title not find in {__name__}. URL: {url}')
             return None
 
         date = datetime.now(tz=timezone.utc)

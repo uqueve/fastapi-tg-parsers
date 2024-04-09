@@ -64,14 +64,13 @@ class ReportBakuParser(BaseParser):
 
         soup = BeautifulSoup(response, 'lxml')
 
-        title = soup.find('h1', class_='news-title').text.replace('\xa0', ' ').strip()
-        print(title)
-        # date_tag = soup.find('div', class_='news-date').text.strip().replace('\n', ' ')
-        # date = self.parse_date(date_tag)
-        date = datetime.now(tz=timezone.utc)
+        try:
+            title = soup.find('h1', class_='news-title').text.replace('\xa0', ' ').strip()
+        except AttributeError:
+            print(f'Title not find in {__name__}. URL: {url}')
+            return None
 
-        # if not self.check_is_new_news(last_news_date, date):
-        #     return None
+        date = datetime.now(tz=timezone.utc)
 
         content = ""
         main_div = soup.find('div', class_='editor-body')

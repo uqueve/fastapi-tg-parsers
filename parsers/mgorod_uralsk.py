@@ -72,13 +72,12 @@ class MgorodUralskParser(BaseParser):
 
         title_ = soup.find('h1', class_='news-title h1')
 
-        title = title_.text.replace('\xa0', ' ').strip()
+        try:
+            title = title_.text.replace('\xa0', ' ').strip()
+        except AttributeError:
+            print(f'Title not find in {__name__}. URL: {url}')
+            return None
 
-        # date_tag = soup.find('div', class_='news-time news-more-info-item').text
-        # date = self.parse_date(date_tag)
-
-        # if not self.check_is_new_news(last_news_date, date):
-        #     return None
         date = datetime.now(tz=timezone.utc)
 
         content = ""
