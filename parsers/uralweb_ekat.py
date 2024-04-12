@@ -11,15 +11,31 @@ from utils.models import Post
 from parsers.base_parser import BaseParser
 
 
+headers = {
+    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+    'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,ja;q=0.6',
+    'dnt': '1',
+    'sec-ch-ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Linux"',
+    'sec-fetch-dest': 'document',
+    'sec-fetch-mode': 'navigate',
+    'sec-fetch-site': 'none',
+    'sec-fetch-user': '?1',
+    'sec-gpc': '1',
+    'upgrade-insecure-requests': '1',
+    'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+}
+
+
 class UralwebEkatParser(BaseParser):
     name = 'ekaterinburg'
     __base_url = 'https://www.uralweb.ru/'
     __news_url = __base_url + 'news/'
     referer = 'https://www.uralweb.ru/news/'
-    # TODO: 'str' object has no attribute 'text'
 
     async def get_new_news(self, last_news_date=None, max_news=10) -> [Post]:
-        response = await self._make_async_request(self.__news_url)
+        response = await self._make_async_request(self.__news_url, headers=headers)
         posts = []
 
         if not response:
@@ -59,14 +75,13 @@ class UralwebEkatParser(BaseParser):
         return posts
 
     async def get_new(self, url):
-        response = await self._make_async_request(url, referer=self.referer)
+        response = await self._make_async_request(url, referer=self.referer, headers=headers)
 
         if not response:
             print(f"Ошибка запроса {__name__}")
             return None
 
-        soup = BeautifulSoup(await response.text(), 'lxml')
-
+        soup = BeautifulSoup(response, 'lxml')
         title_ = soup.find('h1')
 
         try:
@@ -81,7 +96,10 @@ class UralwebEkatParser(BaseParser):
         div_c = soup.find('div', class_='n-ict clearfix news-detail-body')
         div_p = div_c.find_all('p')
         for p in div_p:
-            content += p.text.replace('\xa0', ' ').strip() + '\n'
+            try:
+                content += p.text.replace('\xa0', ' ').strip() + '\n'
+            except AttributeError:
+                continue
 
         image_urls = []
 
@@ -95,11 +113,6 @@ class UralwebEkatParser(BaseParser):
         post = Post(title=title, body=content, image_links=image_urls, date=date, link=url)
         return post
 
-    def parse_date(self, date_text: str):
-        date = datetime.fromtimestamp(float(date_text), tz=timezone.utc)
-        return date
-
 
 if __name__ == '__main__':
-    posts = UralwebEkatParser().get_new_news()
-    print(posts)
+    asyncio.run(UralwebEkatParser().get_new_news(max_news=1))

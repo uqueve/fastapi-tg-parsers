@@ -1,11 +1,7 @@
 import asyncio
 import pprint
 import random
-
-import dateparser
-from dateutil import parser
 from bs4 import BeautifulSoup
-
 from datetime import datetime, timezone
 
 from utils.models import Post
@@ -18,6 +14,7 @@ class MgorodUralskParser(BaseParser):
     __news_url = __base_url + 'nlocation/uralsk/'
     referer = 'https://mgorod.kz/nlocation/uralsk/'
     # TODO: 403 Enable JavaScript and cookies to continue Just a moment...
+    # TODO: Заменить парсер
 
     async def get_new_news(self, last_news_date=None, max_news=3) -> [Post]:
         response = await self._make_async_request(self.__news_url)
@@ -58,7 +55,7 @@ class MgorodUralskParser(BaseParser):
             if len(posts) >= max_news:
                 break
 
-        # pprint.pprint(posts, indent=2)
+        pprint.pprint(posts, indent=2)
         return posts
 
     async def get_new(self, url):
@@ -96,12 +93,6 @@ class MgorodUralskParser(BaseParser):
 
         post = Post(title=title, body=content, image_links=image_urls, date=date, link=url)
         return post
-
-    def parse_date(self, date_text: str):
-        date = ' '.join(date_text.split())
-        date = dateparser.parse(date, languages=['ru'])
-        date = date.replace(tzinfo=timezone.utc)
-        return date
 
 
 if __name__ == '__main__':

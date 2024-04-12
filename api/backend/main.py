@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
 @asynccontextmanager
 async def lifespan(app_obj: FastAPI):
-    prepare_database()
+    # prepare_database()
     await start_parsers()
     yield
 

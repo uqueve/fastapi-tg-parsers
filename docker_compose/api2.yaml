@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  fastapi:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    env_file:
+      - ../.env
+    volumes:
+      - ..:/app
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=backend"
+    # HTTPS
+      - "traefik.http.routers.fastapi-https.entrypoints=https"
+      - "traefik.http.routers.fastapi-https.rule=Host(`fastapi.eurolivenews.org`)"
+      - "traefik.http.routers.fastapi-https.tls=true"
+      - "traefik.http.routers.fastapi-https.tls.certresolver=letsEncrypt"
+      - "traefik.http.services.fastapi-https.loadbalancer.server.port=80"
+    ports:
+      - "${BACKEND_PORT}:8000"
+    expose:
+      - 8000
+    restart: unless-stopped
+    container_name: euronews.fastapi
+    command: bash -c 
+      "uvicorn --factory api.backend.main:create_app --host 0.0.0.0 --port 8000 --lifespan=on --use-colors --reload"
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge

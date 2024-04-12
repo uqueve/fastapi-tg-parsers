@@ -30,11 +30,11 @@ def get_unread_news():
 
 
 def set_news_read(news_list_read: list):
-    news_read_list_of_objects_id = []
+    news_read_list_of_id = []
     for news_id in news_list_read:
-        news_read_list_of_objects_id.append(ObjectId(news_id))
+        news_read_list_of_id.append(news_id)
     try:
-        mongo.update_news_set_read(news_read_list_of_objects_id)
+        mongo.update_news_set_read(news_read_list_of_id)
         return True
     except Exception:
         logger.exception('Error with update news status setting "read"')

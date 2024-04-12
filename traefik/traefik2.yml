@@ -1,23 +1,15 @@
+log:
+  level: INFO
+
+api:
+  insecure: true
+  dashboard: true
+
 entryPoints:
   http:
     address: ":80"
   https:
     address: ":443"
-
-
-http:
-  routers:
-    http-catchall:
-      rule: hostregexp(`{host:.+}`)
-      entrypoints:
-      - http
-      middlewares:
-      - redirect-to-https
-  middlewares:
-    redirect-to-https:
-      redirectScheme:
-        scheme: https
-        permanent: false
 
 providers:
   docker:

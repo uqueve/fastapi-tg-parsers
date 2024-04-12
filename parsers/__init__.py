@@ -14,8 +14,8 @@ logger = logging.getLogger(__name__)
 
 async def start_parsers():
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(parse_news, 'interval', minutes=4, name='Парсинг новостей')
-    scheduler.add_job(post_news, 'interval', minutes=1, name='Постинг новостей')
+    scheduler.add_job(parse_news, 'interval', minutes=10, name='Парсинг новостей')
+    scheduler.add_job(post_news, 'interval', minutes=10, name='Постинг новостей')
     scheduler.start()
 
 

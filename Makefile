@@ -2,10 +2,10 @@ DC = docker compose
 LOGS = docker logs
 ENV = --env-file .env
 
-API_CONTAINER = test_parsers.fastapi
+API_CONTAINER = euronews.fastapi
 APP_FILE = docker_compose/api.yaml
 
-MONGO_CONTAINER = test_parsers.mongodb
+MONGO_CONTAINER = euronews.mongodb
 MONGO_FILE = docker_compose/mongo.yml
 
 

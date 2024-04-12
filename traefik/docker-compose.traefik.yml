@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+
+  traefik:
+    image: "traefik:latest"
+    container_name: "traefik"
+    hostname: "traefik"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    labels:
+      - "traefik.enable=true"
+      ## DNS CHALLENGE
+      - "traefik.http.routers.traefik.tls.certresolver=letsEncrypt"
+#      - "traefik.http.routers.traefik.tls.domains[0].main=*.eurolivenews.org"
+      - "traefik.http.routers.traefik.tls.domains[0].main=eurolivenews.org"
+      - "traefik.http.routers.traefik.tls.domains[0].sans=eurolivenews.org"
+      ## HTTP REDIRECT
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.routers.redirect-https.rule=hostregexp(`{host:.+}`)"
+      - "traefik.http.routers.redirect-https.entrypoints=http"
+      - "traefik.http.routers.redirect-https.middlewares=redirect-to-https"
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./data/traefik.yml:/traefik.yml:ro"
+      - "./data/acme.json:/acme.json"
+    networks:
+      - traefik-network
+
+networks:
+  traefik-network:
+    external: true
