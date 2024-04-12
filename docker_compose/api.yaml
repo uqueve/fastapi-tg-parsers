@@ -13,13 +13,6 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik-network"
-      # old
-#      - "traefik.http.routers.fastapi.entrypoints=https"
-#      - "traefik.http.routers.fastapi.rule=Host(`api.eurolivenews.org`)"
-#      - "traefik.http.routers.fastapi.tls=true"
-#      - "traefik.http.routers.fastapi.tls.certresolver=letsEncrypt"
-#      - "traefik.http.services.fastapi.loadbalancer.server.port=80"
-    # new
       - "traefik.enable=true"
       - "traefik.http.routers.fastapi.entrypoints=https"
       - "traefik.http.routers.fastapi.rule=Host(`eurolivenews.org`)"
@@ -29,17 +22,15 @@ services:
     expose:
       - 8000
     restart: unless-stopped
-    #    ports:
-    #      - "${BACKEND_PORT}:8000"
     command: bash -c 
       "uvicorn --factory api.backend.main:create_app --host 0.0.0.0 --port 8000 --lifespan=on --use-colors --reload"
     networks:
       - traefik-network
-#      - traefik-network
+      - backend
 
 networks:
   traefik-network:
-#    driver: bridge
-#    name: traefik-proxy
     external:
       true
+  backend:
+    driver: bridge

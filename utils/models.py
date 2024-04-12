@@ -21,6 +21,8 @@ class SiteModel(StrEnum):
     NOVOKUZNETSK = auto()
     ULANUDE = auto()
     TALLIN = auto()
+    CHEREPOVEC = auto()
+    # STAVROPOL = auto()
 
 
 @dataclass

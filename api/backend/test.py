@@ -28,7 +28,11 @@ from utils.models import CitySchema, Post
 # content = 'seg eg seg segnsiole34ngw3 giwng lwing wingqwiopan3g vow ridsdgs;dgms;'
 # print('erid' in content)
 
-post = Post()
-city_data = {'oid': '123', 'city': 'some_city', 'ru': 'город'}
-post.city = CitySchema(**city_data).to_dict()
-print(post.city)
+# post = Post()
+# city_data = {'oid': '123', 'city': 'some_city', 'ru': 'город'}
+# post.city = CitySchema(**city_data).to_dict()
+# print(post.city)
+
+some = {1,}
+some.add(1)
+print(type(some))
