@@ -41,10 +41,12 @@ class UlanUdeParser(BaseParser):
             return []
 
         soup = BeautifulSoup(response, 'lxml')
-
         urls = []
-        div = soup.find('div', attrs={'id': 'news_list_left_first'})
-        news = div.find_all('div', class_=lambda value: value.startswith('news-item news-item'))
+
+        news = soup.find_all('div', class_=lambda value: value.startswith('news-item news-item') if value else False)
+        # second way to find tags, a more simple to understand
+        # news = soup.find_all('div', class_=lambda value: find_value(value))
+
         for new in news:
             url = self.__base_url + new.find_next('a').get('href')
             urls.append(url)
@@ -71,7 +73,7 @@ class UlanUdeParser(BaseParser):
 
         if not response:
             print(f"Ошибка запроса {__name__}")
-            return []
+            return None
 
         soup = BeautifulSoup(response, 'lxml')
 
@@ -107,6 +109,14 @@ class UlanUdeParser(BaseParser):
 
         post = Post(title=title, body=content, image_links=image_urls, date=date, link=url)
         return post
+
+
+def find_value(value):
+    if value:
+        if value.startswith('news-item news-item'):
+            return True
+        return False
+    return False
 
 
 if __name__ == '__main__':

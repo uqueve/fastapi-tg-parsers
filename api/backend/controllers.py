@@ -3,14 +3,14 @@ import logging
 from bson import ObjectId
 
 from database.mongo import mongo
-from utils.models import Post, PostOut
+from utils.models import Post, PostOut, CitySchema, SiteModel
 
 logger = logging.getLogger(__name__)
 
 
-def get_unread_news():
+def get_unread_news(city: SiteModel | None):
     news_list = []
-    news = mongo.get_unread_news()
+    news = mongo.get_unread_news(city)
     for new in news:
         try:
             news_obj = Post(**new)
@@ -21,7 +21,9 @@ def get_unread_news():
                 image_links=news_obj.image_links,
                 date=news_obj.date.strftime("'%d.%m.%Y %H:%M:%S"),
                 link=news_obj.link,
-                city=news_obj.city
+                city=news_obj.city,
+                posted=news_obj.posted,
+                sent=news_obj.sent
             )
             news_list.append(post_out)
         except Exception:
@@ -39,3 +41,24 @@ def set_news_read(news_list_read: list):
     except Exception:
         logger.exception('Error with update news status setting "read"')
         return False
+
+
+def get_news_by_oid(news_oid: str):
+    new = mongo.get_news_by_oid(oid=news_oid)
+    try:
+        news_obj = Post(**new)
+        post_out = PostOut(
+            oid=news_obj.oid,
+            title=news_obj.title,
+            body=news_obj.body,
+            image_links=news_obj.image_links,
+            date=news_obj.date.strftime("'%d.%m.%Y %H:%M:%S"),
+            link=news_obj.link,
+            city=news_obj.city,
+            posted=news_obj.posted,
+            sent=news_obj.sent
+        )
+    except Exception:
+        logger.exception('Problem with dump models when getting unread news')
+        return None
+    return post_out

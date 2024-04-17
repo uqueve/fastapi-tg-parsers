@@ -17,8 +17,9 @@ class ReportBakuParser(BaseParser):
     __base_url = 'https://report.az'
     __news_url = __base_url + '/ru/news-feed/'
     referer = 'https://report.az/ru/'
+    # TODO: 503 Service Temporarily Unavailable
 
-    async def get_new_news(self, last_news_date=None, max_news=10) -> [Post]:
+    async def get_new_news(self, last_news_date=None, max_news=3) -> [Post]:
         response = await self._make_async_request(self.__news_url, json=True)
         posts = []
 
@@ -60,7 +61,7 @@ class ReportBakuParser(BaseParser):
 
         if not response:
             print(f"Ошибка запроса {__name__}")
-            return []
+            return None
 
         soup = BeautifulSoup(response, 'lxml')
 
@@ -92,13 +93,6 @@ class ReportBakuParser(BaseParser):
         post = Post(title=title, body=content, image_links=image_urls, date=date, link=url)
         return post
 
-    def parse_date(self, date_text: str):
-        date = ' '.join(date_text.split())
-        date = dateparser.parse(date, languages=['ru'])
-        date = date.replace(tzinfo=timezone.utc)
-        return date
-
 
 if __name__ == '__main__':
-    # asyncio.run(ReportBakuParser().get_new('https://report.az/ru/drugie-strany/tramp-ne-pozvolyu-drugim-stranam-otkazatsya-ot-dollara/'))
     asyncio.run(ReportBakuParser().get_new_news())

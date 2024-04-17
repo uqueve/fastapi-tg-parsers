@@ -52,7 +52,7 @@ class StavropolParser(BaseParser):
             except Exception as ex:
                 print(ex)
                 continue
-        print(urls)
+
         for url in urls:
             try:
                 post = await self.get_new(url)
@@ -68,7 +68,6 @@ class StavropolParser(BaseParser):
 
             if len(posts) >= max_news:
                 break
-        # print(posts)
         return posts
 
     async def get_new(self, url):

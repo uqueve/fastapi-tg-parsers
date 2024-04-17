@@ -69,7 +69,6 @@ class CherepovecParser(BaseParser):
 
             if len(posts) >= max_news:
                 break
-        # print(posts)
         return posts
 
     async def get_new(self, url):

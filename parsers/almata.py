@@ -85,7 +85,6 @@ class AlmataParser(BaseParser):
 
             if len(posts) >= max_news:
                 break
-
         return posts
 
     async def get_new(self, url):
@@ -135,4 +134,4 @@ class AlmataParser(BaseParser):
 
 
 if __name__ == '__main__':
-    asyncio.run(AlmataParser().get_new_news())
+    asyncio.run(AlmataParser().get_new_news(max_news=10))

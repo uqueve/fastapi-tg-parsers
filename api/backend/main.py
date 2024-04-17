@@ -2,6 +2,7 @@ import logging
 import sys
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from api.backend.news import news_router
 from api.backend.check import health_router
@@ -25,7 +26,18 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
         docs_url='/v1/docs',
         description='API for work with news (FastAPI)',
-        debug=True
+        debug=False
+    )
+    origins = [
+        "*",
+    ]
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+        # expose_headers=["*"]
     )
     app.include_router(news_router, prefix='/v1')
     app.include_router(health_router, prefix='/v1')

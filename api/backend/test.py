@@ -33,6 +33,12 @@ from utils.models import CitySchema, Post
 # post.city = CitySchema(**city_data).to_dict()
 # print(post.city)
 
-some = {1,}
-some.add(1)
-print(type(some))
+# import requests
+#
+# headers = {'X-API-Key': 'il3n4ln4ln2q3tnln'}
+# response = requests.get('https://eurolivenews.org/v1/news/unread', headers=headers)
+# print(response.status_code)
+# print(response.json())
+
+city = CitySchema()
+print(city)

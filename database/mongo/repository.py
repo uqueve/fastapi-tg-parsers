@@ -1,7 +1,7 @@
 from bson import ObjectId
 from pymongo.database import Database
 
-from utils.models import Post, SiteModel
+from utils.models import Post, SiteModel, CitySchema
 
 
 class NewsRepository:
@@ -62,9 +62,15 @@ class NewsRepository:
         collection = self.connection['news']
         collection.update_one(filter={"oid": news_id}, update={'$set': {"body": body}})
 
-    def get_unread_news(self):
+    def get_unread_news(self, city: CitySchema | None):
         collection = self.connection['news']
-        return collection.find(filter={"sent": False, "posted": True}).sort('date')
+        if not city:
+            return collection.find(filter={"sent": False, "posted": True}).sort("date")
+        return collection.find(filter={"city.ru": city, "posted": True}).sort("date")
+
+    def get_news_by_oid(self, oid: str):
+        collection = self.connection['news']
+        return collection.find_one(filter={"oid": oid, "posted": True})
 
     def _get_one_news(self):
         collection = self.connection['news']

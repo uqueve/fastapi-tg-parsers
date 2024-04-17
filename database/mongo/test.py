@@ -1,18 +1,19 @@
 from bson import ObjectId
 
 from api.backend.controllers import get_unread_news
-from database.mongo import mongo
-from utils.models import Post
+# from database.mongo import mongo
+# from utils.models import Post
+#
+# post = Post(
+#     title='Some title 55',
+#     body='Some body 55',
+#     image_links=['link 1', 'link 2']
+# )
+# news_id = mongo.add_one_news(post=post)
+# print(news_id)
+# mongo.update_news_body_ai(news_id=news_id, body='Some new body!')
+# print(mongo._get_news_by_id(_id=news_id))
 
-post = Post(
-    title='Some title 55',
-    body='Some body 55',
-    image_links=['link 1', 'link 2']
-)
-news_id = mongo.add_one_news(post=post)
-print(news_id)
-mongo.update_news_body_ai(news_id=news_id, body='Some new body!')
-print(mongo._get_news_by_id(_id=news_id))
 # post = mongo._get_news_by_id('6600779adb0598ff63f14f26')
 # print(post)
 # post = Post(**post)

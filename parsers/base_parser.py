@@ -8,6 +8,8 @@ from aiohttp import ClientTimeout, ClientResponse
 
 from utils.models import Post
 
+logger = logging.getLogger(__name__)
+
 
 class BaseParser:
     name = str()
@@ -57,20 +59,51 @@ class BaseParser:
         try:
             # answers = socket.getaddrinfo('grimaldis.myguestaccount.com', 443)
             # (family, type, proto, canonname, (address, port)) = answers[0]
-            timeout = ClientTimeout(total=6)
+            timeout = ClientTimeout(total=10)
             async with aiohttp.request(method='GET', url=url, headers=headers, timeout=timeout) as response:
                 if response.status != 200:
-                    logging.warning(f'### {response.status}\t{self.name}\t{url}\n{await response.text()}')
+                    logger.warning(f'### {response.status}\t{self.name}\t{url}\n{await response.text()}')
                     if self.proxies:
                         return await self.__make_async_request_with_proxies(url=url, json=json)
                 if not json:
                     return await response.text()
                 else:
                     return await response.json()
+        except TimeoutError:
+            retries = 0
+
+            while retries <= 3:
+                logger.warning(f'TimeoutError. Ещё одна попытка запроса: {retries}...')
+                response = await self._retry_async_request(url=url, headers=headers, json=json, referer=referer)
+                if response:
+                    return response
+                retries += 1
+            logger.warning(f'Попытки закончились, не могу подключиться. URL={url}\nЗаголовки: {headers}')
+            return None
+
         except Exception as e:
-            logging.exception(f'Ошибка запроса {self.name}\t{url}')
+            logger.exception(f'Ошибка запроса {self.name}\t{url}')
             if self.proxies:
                 return await self.__make_async_request_with_proxies(url=url)
+
+    async def _retry_async_request(self, url, headers=None, json: bool = False, referer: str = None) -> Any:
+        if not headers:
+            headers = self.headers
+            if referer:
+                headers['referer'] = referer
+        try:
+            timeout = ClientTimeout(total=6)
+            async with aiohttp.request(method='GET', url=url, headers=headers, timeout=timeout) as response:
+                if response.status != 200:
+                    if self.proxies:
+                        return await self.__make_async_request_with_proxies(url=url, json=json)
+                    logger.warning(f'### Retry request: {response.status}\t{self.name}\t{url}\n{await response.text()}')
+                if not json:
+                    return await response.text()
+                else:
+                    return await response.json()
+        except Exception:
+            return False
 
     async def __make_async_request_with_proxies(self, url, headers=None, json: bool = False) -> Any:
         # TODO: aiohttp/connector.py:909: RuntimeWarning: An HTTPS request is being sent through an HTTPS proxy.
@@ -82,34 +115,30 @@ class BaseParser:
         #  You can temporarily patch this as follows:
         #  https://docs.aiohttp.org/en/stable/client_advanced.html#proxy-support
         #  https://github.com/aio-libs/aiohttp/discussions/6044
-        try:
-            if not headers:
-                headers = self.headers
-            for proxy_dict in self.proxies:
-                try:
-                    timeout = ClientTimeout(total=30)
-                    # proxy = proxy_dict.items().mapping['http']
-                    proxy_url = proxy_dict['url']
-                    proxy_login = proxy_dict['login']
-                    proxy_pass = proxy_dict['pass']
-                    auth = aiohttp.BasicAuth(login=proxy_login, password=proxy_pass)
-                    async with aiohttp.request(method='GET',
-                                               url=url,
-                                               headers=headers,
-                                               timeout=timeout,
-                                               proxy=proxy_url,
-                                               proxy_auth=auth) as response:
-                        if response.status // 100 != 2:
-                            logging.warning(
-                                f'\t\t- Warning! the proxie request error in {self.name} parser. status code: {response.status}')
-                            continue
-                        if json:
-                            return await response.json()
-                        return await response.text()
-                except Exception as ee:
-                    logging.exception(f'Ошибка запроса с прокси {self.name}\t{url}')
-                    continue
-        except Exception as e:
-            logging.exception(f'Ошибка запроса с прокси {self.name}\t{url}')
-            return []
-        return []
+        if not headers:
+            headers = self.headers
+        for proxy_dict in self.proxies:
+            try:
+                timeout = ClientTimeout(total=30)
+                # proxy = proxy_dict.items().mapping['http']
+                proxy_url = proxy_dict['url']
+                proxy_login = proxy_dict['login']
+                proxy_pass = proxy_dict['pass']
+                auth = aiohttp.BasicAuth(login=proxy_login, password=proxy_pass)
+                async with aiohttp.request(method='GET',
+                                           url=url,
+                                           headers=headers,
+                                           timeout=timeout,
+                                           proxy=proxy_url,
+                                           proxy_auth=auth) as response:
+                    if response.status // 100 != 2:
+                        logger.warning(
+                            f'\t\t- Warning! the proxie request error in {self.name} parser. status code: {response.status}')
+                        continue
+                    if json:
+                        return await response.json()
+                    return await response.text()
+            except Exception as ee:
+                logger.exception(f'Ошибка запроса с прокси {self.name}\t{url}')
+                continue
+        return None

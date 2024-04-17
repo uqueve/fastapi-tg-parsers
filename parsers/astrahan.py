@@ -71,7 +71,7 @@ class AstrahanParser(BaseParser):
 
         if not response:
             print(f"Ошибка запроса {__name__}")
-            return []
+            return None
 
         soup = BeautifulSoup(response, 'lxml')
 

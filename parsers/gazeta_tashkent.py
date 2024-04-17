@@ -16,9 +16,8 @@ class GazetaTashkentParser(BaseParser):
     __base_url = 'https://www.gazeta.uz/'
     __news_url = __base_url + 'ru/'
     referer = 'https://www.gazeta.uz/ru/'
-    # TODO: 503 Service Temporarily Unavailable
 
-    async def get_new_news(self, last_news_date=None, max_news=10) -> [Post]:
+    async def get_new_news(self, last_news_date=None, max_news=3) -> [Post]:
         response = await self._make_async_request(self.__news_url)
         posts = []
 
