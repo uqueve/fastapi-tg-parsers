@@ -1,7 +1,6 @@
 import asyncio
 import random
-import re
-from dataclasses import dataclass
+from dataclasses import field, dataclass
 
 from bs4 import BeautifulSoup
 
@@ -21,7 +20,7 @@ headers = {
     'sec-ch-ua-platform': '"Linux"',
     'sec-fetch-dest': 'document',
     'sec-fetch-mode': 'navigate',
-    'sec-fetch-site': 'same-site',
+    'sec-fetch-site': 'cross-site',
     'sec-fetch-user': '?1',
     'sec-gpc': '1',
     'upgrade-insecure-requests': '1',
@@ -30,11 +29,11 @@ headers = {
 
 
 @dataclass
-class StavropolParser(BaseParser, BaseRequest):
-    name = 'stavropol'
-    __base_url = 'https://news.1777.ru/'
-    __news_url = __base_url
-    referer = 'https://news.1777.ru/'
+class ChelyabinskParser(BaseParser, BaseRequest):
+    name: str = 'chelyabinsk'
+    __base_url: str = 'https://m.ura.news'
+    __news_url: str = 'https://m.ura.news/chel'
+    referer: str = 'https://m.ura.news/chel'
 
     async def get_news(self, urls) -> list[Post]:
         news = []
@@ -53,46 +52,61 @@ class StavropolParser(BaseParser, BaseRequest):
         urls = []
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers)
-        main_div = soup.find('table', class_='news_render_lenta')
-        items = soup.find_all('td', class_='news_render_lenta_header')
+        main_div = soup.find('div', attrs={'id': 'main_list'})
+        items = soup.find_all('div', class_=lambda value: find_value(value, 'list-item'))
         for item in items:
             url_raw = item.find_next('a')
             if not url_raw:
                 continue
             url = url_raw.get('href')
             if not url.startswith('https:'):
-                url = 'https:' + url
+                url = self.__base_url + url
             urls.append(url)
         return urls
 
-    def find_title(self, soup) -> str | None:
-        title_ = soup.find('h1', class_='news_render_one_header')
-        if not title_:
-            return None
-        title = title_.text.replace('\xa0', ' ').strip()
+    def find_title(self, soup: BeautifulSoup) -> str:
+        title = soup.find('h1', attrs={'itemprop': 'headline name'}).text.replace('\xa0', ' ').strip()
         return title
 
-    def find_body(self, soup) -> str | None:
-        content = ''
-        div = soup.find('td', class_='news_render_one_full_story')
-        content += div.text.replace('\xa0', ' ').strip()
-        return content
+    def find_body(self, soup: BeautifulSoup) -> str:
+        body = ''
+        content = soup.find('div', class_='item-text')
+        ps = content.find_all('p')
+        for p in ps:
+            if not p:
+                continue
+            if p.text.startswith('Подписка на') or p.text.startswith('Сохрани номер'):
+                continue
+            body += p.text.replace('\xa0', ' ').strip()
+        return body
 
-    def find_photos(self, soup) -> list[str] | list:
-        images_urls = []
-        div = soup.find('td', class_='news_render_one_full_image')
-        if div:
-            photo = div.find('img')
+    def find_photos(self, soup: BeautifulSoup) -> list:
+        photos = []
+        main_photo_div = soup.find('div', attrs={'itemprop': 'image'})
+        if main_photo_div:
+            photo = main_photo_div.find('source', attrs={'type': 'image/jpeg'})
             if photo:
-                photo = photo.get('src')
-                if not photo.startswith('https:'):
-                    photo = 'https:' + photo
-            images_urls.append(photo)
-        return images_urls
+                photos.append(photo.get('srcset'))
+
+        other_photos = soup.find_all('div', class_='it-img')
+        for photo_div in other_photos:
+            photo_raw = photo_div.find('img')
+            if not photo_raw:
+                continue
+            photos.append(photo_raw.get('src'))
+        return photos
+
+
+def find_value(value, example):
+    if value:
+        if value.startswith(example):
+            return True
+        return False
+    return False
 
 
 async def test():
-    parser = StavropolParser()
+    parser = ChelyabinskParser()
     urls = await parser.find_news_urls()
     # print(urls)
     print(await parser.get_news(urls))
@@ -100,4 +114,3 @@ async def test():
 
 if __name__ == '__main__':
     asyncio.run(test())
-

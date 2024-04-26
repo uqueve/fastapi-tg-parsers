@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 import pprint
 
 import aiohttp
@@ -9,6 +10,9 @@ from utils.exceptions.telegram import *
 from utils.models import CustomMediaChunks
 from utils.models import Post
 from utils.text_sevice import chunks_to_text, correct_caption_len
+
+
+logger = logging.getLogger(__name__)
 
 
 async def send_news(post: Post, channel_tg_id, mongo):
@@ -28,17 +32,25 @@ async def send_news(post: Post, channel_tg_id, mongo):
             print(1)
             media[0]['caption'] = caption
             media[0]['parse_mode'] = 'HTML'
-            await send_media_group(channel_id=chat_id, media=media, post=post)
+            try:
+                await send_media_group(channel_id=chat_id, media=media, post=post)
+            except TelegramSendMediaGroupError as error:
+                logger.error(f'{error.message}')
 
         else:
             caption = correct_caption_len(caption)
             caption += f'<a href="{image_link}">&#160</a>'
-
-            await send_message(text=caption, channel_id=chat_id, post=post)
+            try:
+                await send_message(text=caption, channel_id=chat_id, post=post)
+            except TelegramSendMessageError as error:
+                logger.error(f'{error.message}')
     else:
         if len(caption) >= 1024:
             caption = correct_caption_len(caption)
-        await send_message(channel_id=channel_tg_id, text=caption, post=post)
+        try:
+            await send_message(channel_id=channel_tg_id, text=caption, post=post)
+        except TelegramSendMessageError as error:
+            logger.error(f'{error.message}')
 
     mongo.update_news_set_posted(news_id=post.oid)
     mongo.update_news_body_ai(news_id=post.oid, body=post.body)

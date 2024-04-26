@@ -15,6 +15,7 @@ class BaseParser:
     name = str()
     __base_url = str()
     __news_url = str()
+    max_news = 5
 
     headers = OrderedDict({
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',

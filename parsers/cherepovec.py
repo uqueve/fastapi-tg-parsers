@@ -1,11 +1,14 @@
 import asyncio
 import random
 import re
+from dataclasses import dataclass
+
 from bs4 import BeautifulSoup
 from datetime import datetime, timezone
 
+from parsers.models.base import BaseParser
+from parsers.models.request import BaseRequest
 from utils.models import Post
-from parsers.base_parser import BaseParser
 
 
 headers = {
@@ -26,25 +29,32 @@ headers = {
 }
 
 
-class CherepovecParser(BaseParser):
+@dataclass
+class CherepovecParser(BaseParser, BaseRequest):
     name = 'cherepovec'
     __base_url = 'https://cherinfo.ru'
     __news_url = __base_url + '/news'
     referer = 'https://cherinfo.ru/news'
 
-    async def get_new_news(self, last_news_date=None, max_news=3) -> [Post]:
-        response = await self._make_async_request(self.__news_url)
-        posts = []
+    async def get_news(self, urls) -> list[Post]:
+        news = []
+        for new_url in urls:
+            if len(news) >= self.max_news:
+                return news
+            soup = await self.get_soup(new_url, headers=headers, referer=self.referer)
+            new = self.get_new(soup, url=new_url)
+            if not new:
+                continue
+            await asyncio.sleep(random.randrange(8, 15))
+            news.append(new)
+        return news
 
-        if not response:
-            print(f"Ошибка запроса {__name__}")
-            return []
-
-        soup = BeautifulSoup(response, 'lxml')
-
+    async def find_news_urls(self, max_news=3) -> list[str]:
+        urls = []
+        url = self.__news_url
+        soup = await self.get_soup(url=url, headers=headers)
         main_articles = soup.find('div', class_='container content wrapper')
         articles_block = main_articles.find_all('a', class_='lenta-title', limit=max_news)
-        urls = []
 
         for article in articles_block:
             try:
@@ -53,49 +63,29 @@ class CherepovecParser(BaseParser):
             except Exception as ex:
                 print(ex)
                 continue
+        return urls
 
-        for url in urls:
-            try:
-                post = await self.get_new(url)
-                await asyncio.sleep(random.choice(range(5)))
-            except Exception as ex:
-                print(ex)
-                continue
-
-            if post is None:
-                continue
-
-            posts.append(post)
-
-            if len(posts) >= max_news:
-                break
-        return posts
-
-    async def get_new(self, url):
-        response = await self._make_async_request(url, headers=headers, referer=self.referer)
-
-        if not response:
-            print(f"Ошибка запроса {__name__}")
-            return None
-
-        soup = BeautifulSoup(response, 'lxml')
-
+    def find_title(self, soup) -> str | None:
         main_block = soup.find('div', class_='col-lg-9 col-md-9 col-sm-12 col-xs-12 sticky-main print-wide ny-2023')
-
         if not main_block:
             return
+        title = main_block.find('h1', class_='margin-bottom-small').text.replace('\xa0', ' ').strip()
+        return title
 
-        try:
-            title = main_block.find('h1', class_='margin-bottom-small').text.replace('\xa0', ' ').strip()
-        except AttributeError:
-            print(f'Title not find in {__name__}. URL: {url}')
-            return None
-
-        date = datetime.now(tz=timezone.utc)
-
+    def find_body(self, soup) -> str | None:
         content = ""
-        image_urls = set()
+        main_block = soup.find('div', class_='col-lg-9 col-md-9 col-sm-12 col-xs-12 sticky-main print-wide ny-2023')
+        contents_div = main_block.find('div', class_='js-mediator-article article-text')
+        contents = contents_div.find_all('p')
+        for con in contents:
+            content += con.text.replace('\xa0', ' ').strip() + '\n'
+        if 'Erid' in content:
+            return
+        return content
 
+    def find_photos(self, soup) -> list[str] | list:
+        image_urls = set()
+        main_block = soup.find('div', class_='col-lg-9 col-md-9 col-sm-12 col-xs-12 sticky-main print-wide ny-2023')
         contents_div = main_block.find('div', class_='js-mediator-article article-text')
         contents = contents_div.find_all('p')
         for con in contents:
@@ -103,23 +93,24 @@ class CherepovecParser(BaseParser):
             if photo:
                 if photo := photo.get('src'):
                     image_urls.add(photo)
-            content += con.text.replace('\xa0', ' ').strip() + '\n'
-        if 'Erid' in content:
-            return
 
         photo_div = main_block.find('div', class_='widget print-hidden')
 
         if photo_div:
-            # print(photo_div)
             photos = photo_div.find_all('a')
             for photo in photos:
                 if photo := photo.get('href'):
                     image_urls.add(photo)
 
-        image_urls = list(image_urls)
-        post = Post(title=title, body=content, image_links=image_urls, date=date, link=url)
-        return post
+        return list(image_urls)
+
+
+async def test():
+    parser = CherepovecParser()
+    urls = await parser.find_news_urls()
+    # print(urls)
+    print(await parser.get_news(urls))
 
 
 if __name__ == '__main__':
-    asyncio.run(CherepovecParser().get_new_news())
+    asyncio.run(test())

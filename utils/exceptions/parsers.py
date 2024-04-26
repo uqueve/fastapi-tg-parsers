@@ -5,4 +5,6 @@ from dataclasses import dataclass
 class ParserException(Exception):
     @property
     def message(self):
-        return 'Произошла ошибка парсера,'
+        return 'Произошла ошибка парсера'
+
+

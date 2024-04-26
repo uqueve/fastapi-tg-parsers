@@ -26,4 +26,13 @@ cities = [
     {'city': SiteModel.NOVOKUZNETSK, 'channel_tg_id': -1001695780793, 'ru': 'Новокузнецк', 'oid': '9'},
     {'city': SiteModel.ULANUDE, 'channel_tg_id': -1002117826746, 'ru': 'Улан-Удэ', 'oid': '10'},
     {'city': SiteModel.CHEREPOVEC, 'channel_tg_id': -1002019398891, 'ru': 'Череповец', 'oid': '11'},
+    {'city': SiteModel.VLADIVOSTOK, 'channel_tg_id': -1001987581011, 'ru': 'Владивосток', 'oid': '12'},
+    {'city': SiteModel.BRYANSK, 'channel_tg_id': -1001983540338, 'ru': 'Брянск', 'oid': '13'},
+    {'city': SiteModel.KRASNODAR, 'channel_tg_id': -1002044780327, 'ru': 'Краснодар', 'oid': '14'},
+    {'city': SiteModel.SURGUT, 'channel_tg_id': -1002058813596, 'ru': 'Сургут', 'oid': '15'},
+    {'city': SiteModel.STAVROPOL, 'channel_tg_id': -1002127727187, 'ru': 'Ставрополь', 'oid': '16'},
+    {'city': SiteModel.CHELYABINSK, 'channel_tg_id': -1002061678932, 'ru': 'Челябинск', 'oid': '17'},
+    {'city': SiteModel.SOROCHINSK, 'channel_tg_id': -1002011478896, 'ru': 'Сорочинск', 'oid': '18'},
+    {'city': SiteModel.SMOLENSK, 'channel_tg_id': -1002058539834, 'ru': 'Смоленск', 'oid': '19'},
+    {'city': SiteModel.TUMEN, 'channel_tg_id': -1002001813291, 'ru': 'Тюмень', 'oid': '20'},
 ]

@@ -1,7 +1,6 @@
 import asyncio
 import random
-import re
-from dataclasses import dataclass
+from dataclasses import field, dataclass
 
 from bs4 import BeautifulSoup
 
@@ -15,13 +14,14 @@ headers = {
     'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,ja;q=0.6',
     'cache-control': 'max-age=0',
     'dnt': '1',
+    'if-modified-since': 'Fri, 26 Apr 2024 13:59:59 GMT',
     'priority': 'u=0, i',
     'sec-ch-ua': '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
     'sec-ch-ua-mobile': '?0',
     'sec-ch-ua-platform': '"Linux"',
     'sec-fetch-dest': 'document',
     'sec-fetch-mode': 'navigate',
-    'sec-fetch-site': 'same-site',
+    'sec-fetch-site': 'cross-site',
     'sec-fetch-user': '?1',
     'sec-gpc': '1',
     'upgrade-insecure-requests': '1',
@@ -30,11 +30,11 @@ headers = {
 
 
 @dataclass
-class StavropolParser(BaseParser, BaseRequest):
-    name = 'stavropol'
-    __base_url = 'https://news.1777.ru/'
-    __news_url = __base_url
-    referer = 'https://news.1777.ru/'
+class SmolenskParser(BaseParser, BaseRequest):
+    name: str = 'smolensk'
+    __base_url: str = 'https://smolensk-i.ru'
+    __news_url: str = 'https://smolensk-i.ru/'
+    referer: str = 'https://smolensk-i.ru/'
 
     async def get_news(self, urls) -> list[Post]:
         news = []
@@ -53,46 +53,54 @@ class StavropolParser(BaseParser, BaseRequest):
         urls = []
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers)
-        main_div = soup.find('table', class_='news_render_lenta')
-        items = soup.find_all('td', class_='news_render_lenta_header')
+        div = soup.find('div', class_='chronicle-posts')
+        items = div.find_all('article', class_=lambda value: find_value(value, 'post-'))
         for item in items:
-            url_raw = item.find_next('a')
+            url_raw = item.find('div', class_='entry-title').find('a')
             if not url_raw:
                 continue
             url = url_raw.get('href')
-            if not url.startswith('https:'):
-                url = 'https:' + url
             urls.append(url)
         return urls
 
-    def find_title(self, soup) -> str | None:
-        title_ = soup.find('h1', class_='news_render_one_header')
-        if not title_:
+    def find_title(self, soup: BeautifulSoup) -> str | None:
+        title = soup.find('h1', class_='entry-title')
+        if not title:
             return None
-        title = title_.text.replace('\xa0', ' ').strip()
+        title = title.text.replace('\xa0', ' ').strip()
         return title
 
-    def find_body(self, soup) -> str | None:
-        content = ''
-        div = soup.find('td', class_='news_render_one_full_story')
-        content += div.text.replace('\xa0', ' ').strip()
-        return content
+    def find_body(self, soup: BeautifulSoup) -> str:
+        body = ''
+        content = soup.find('div', class_='entry-content')
+        ps = content.find_all('p')
+        for p in ps:
+            if find_value(p.text, 'текст:'):
+                continue
+            body += p.text.replace('\xa0', ' ').strip()
+        return body
 
-    def find_photos(self, soup) -> list[str] | list:
-        images_urls = []
-        div = soup.find('td', class_='news_render_one_full_image')
-        if div:
-            photo = div.find('img')
-            if photo:
-                photo = photo.get('src')
-                if not photo.startswith('https:'):
-                    photo = 'https:' + photo
-            images_urls.append(photo)
-        return images_urls
+    def find_photos(self, soup: BeautifulSoup) -> list:
+        photos = []
+        content_div = soup.find('div', class_='entry-content')
+        photo_divs = content_div.find_all('figure', class_=lambda value: find_value(value, 'wp-block-image'))
+        for photo_div in photo_divs:
+            if photo_div:
+                photo = photo_div.find('img').get('src')
+                photos.append(photo)
+        return photos
+
+
+def find_value(value, example):
+    if value:
+        if value.startswith(example):
+            return True
+        return False
+    return False
 
 
 async def test():
-    parser = StavropolParser()
+    parser = SmolenskParser()
     urls = await parser.find_news_urls()
     # print(urls)
     print(await parser.get_news(urls))
@@ -100,4 +108,3 @@ async def test():
 
 if __name__ == '__main__':
     asyncio.run(test())
-

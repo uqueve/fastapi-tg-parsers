@@ -1,11 +1,13 @@
 import asyncio
 import random
+from dataclasses import dataclass
 
 from bs4 import BeautifulSoup
 from datetime import datetime, timezone
 
+from parsers.models.base import BaseParser
+from parsers.models.request import BaseRequest
 from utils.models import Post
-from parsers.base_parser import BaseParser
 
 
 headers = {
@@ -26,85 +28,70 @@ headers = {
 }
 
 
-class NovokuznetskParser(BaseParser):
+@dataclass
+class NovokuznetskParser(BaseParser, BaseRequest):
     name = 'novokuznetsk'
     __base_url = 'https://novokuznetsk.su'
     __news_url = __base_url
     referer = 'https://novokuznetsk.su/'
 
-    async def get_new_news(self, last_news_date=None, max_news=3) -> [Post]:
-        response = await self._make_async_request(self.__news_url, headers=headers)
-        posts = []
+    async def get_news(self, urls) -> list[Post]:
+        news = []
+        for new_url in urls:
+            if len(news) >= self.max_news:
+                return news
+            soup = await self.get_soup(new_url, headers=headers, referer=self.referer)
+            new = self.get_new(soup, url=new_url)
+            if not new:
+                continue
+            await asyncio.sleep(random.randrange(3, 8))
+            news.append(new)
+        return news
 
-        if not response:
-            print(f"Ошибка запроса {__name__}")
-            return []
-
-        soup = BeautifulSoup(response, 'lxml')
-
+    async def find_news_urls(self, max_news=3) -> list[str]:
         urls = []
+        url = self.__news_url
+        soup = await self.get_soup(url=url, headers=headers)
         div = soup.find('div', class_='grid grid-cols-1 md:grid-cols-2 gap-6')
         news = div.find_all('a')
         for new in news:
             url = self.__base_url + new.get('href')
             urls.append(url)
+        return urls
 
-        for url in urls:
-            try:
-                post = await self.get_new(url)
-                await asyncio.sleep(random.choice(range(5)))
-            except Exception as ex:
-                continue
-
-            if post is None:
-                continue
-
-            posts.append(post)
-
-            if len(posts) >= max_news:
-                break
-        return posts
-
-    async def get_new(self, url):
-        response = await self._make_async_request(url, referer=self.referer)
-
-        if not response:
-            print(f"Ошибка запроса {__name__}")
-            return None
-
-        soup = BeautifulSoup(response, 'lxml')
-
+    def find_title(self, soup) -> str | None:
         main_block = soup.find('div', class_='text-2sm')
-
         if not main_block:
             return None
+        title = main_block.find('h1').text.strip()
+        return title
 
-        try:
-            title = main_block.find('h1').text.strip()
-        except AttributeError:
-            print(f'Title not find in {__name__}. URL: {url}')
-            return None
-
-        date = datetime.now(tz=timezone.utc)
-
+    def find_body(self, soup) -> str | None:
         content = ""
-
+        main_block = soup.find('div', class_='text-2sm')
         contents = main_block.find_all('p')
         for con in contents:
             content += con.text.replace('\xa0', ' ').strip() + '\n'
         if 'Erid' in content:
             return None
 
+    def find_photos(self, soup) -> list[str] | list:
         image_urls = []
+        main_block = soup.find('div', class_='text-2sm')
         photo_div = main_block.find('img')
 
         if photo_div:
             photo = photo_div.get('src')
             image_urls.append(photo)
+        return image_urls
 
-        post = Post(title=title, body=content, image_links=image_urls, date=date, link=url)
-        return post
+
+async def test():
+    parser = NovokuznetskParser()
+    urls = await parser.find_news_urls()
+    # print(urls)
+    print(await parser.get_news(urls))
 
 
 if __name__ == '__main__':
-    asyncio.run(NovokuznetskParser().get_new_news())
+    asyncio.run(test())

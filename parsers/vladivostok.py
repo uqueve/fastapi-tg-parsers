@@ -1,11 +1,10 @@
 import asyncio
 import json
-import pprint
 import random
-from dataclasses import dataclass
+from dataclasses import field, dataclass
+from datetime import datetime
 
 from bs4 import BeautifulSoup
-from datetime import datetime, timezone
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
@@ -18,7 +17,7 @@ headers = {
     'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,ja;q=0.6',
     'Connection': 'keep-alive',
     'DNT': '1',
-    'Referer': 'https://ria.ru/amp/location_Tallinn/',
+    'Referer': 'https://ria.ru/amp/location_Vladivostok/',
     'Sec-Fetch-Dest': 'empty',
     'Sec-Fetch-Mode': 'cors',
     'Sec-Fetch-Site': 'same-origin',
@@ -31,11 +30,11 @@ headers = {
 
 
 @dataclass
-class TallinTallinParser(BaseParser, BaseRequest):
-    name = 'tallin'
-    __base_url = 'https://ria.ru'
-    __news_url = __base_url + '/amp/location_Tallinn/more.json'
-    referer = 'https://ria.ru/amp/location_Tallinn/'
+class VladivostokParser(BaseParser, BaseRequest):
+    name: str = 'tumen'
+    __base_url: str = 'https://ria.ru'
+    __news_url: str = 'https://ria.ru/amp/location_Vladivostok/more.json'
+    referer: str = 'https://ria.ru/amp/location_Vladivostok/'
 
     async def get_news(self, urls) -> list[Post]:
         news = []
@@ -86,8 +85,16 @@ class TallinTallinParser(BaseParser, BaseRequest):
         return image_urls
 
 
+def find_value(value, example):
+    if value:
+        if value.startswith(example):
+            return True
+        return False
+    return False
+
+
 async def test():
-    parser = TallinTallinParser()
+    parser = VladivostokParser()
     urls = await parser.find_news_urls()
     # print(urls)
     print(await parser.get_news(urls))

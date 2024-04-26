@@ -1,94 +1,76 @@
 import asyncio
-import pprint
 import random
+from dataclasses import dataclass
 
-import dateparser
 from bs4 import BeautifulSoup
 
-from datetime import datetime, timezone
-
+from parsers.models.base import BaseParser
+from parsers.models.request import BaseRequest
 from utils.models import Post
-from parsers.base_parser import BaseParser
 
 
-class GazetaTashkentParser(BaseParser):
+@dataclass
+class TashkentParser(BaseParser, BaseRequest):
     name = 'tashkent'
     __base_url = 'https://www.gazeta.uz/'
     __news_url = __base_url + 'ru/'
     referer = 'https://www.gazeta.uz/ru/'
 
-    async def get_new_news(self, last_news_date=None, max_news=3) -> [Post]:
-        response = await self._make_async_request(self.__news_url)
-        posts = []
+    async def get_news(self, urls) -> list[Post]:
+        news = []
+        for new_url in urls:
+            if len(news) >= self.max_news:
+                return news
+            soup = await self.get_soup(new_url, referer=self.referer)
+            new = self.get_new(soup, url=new_url)
+            if not new:
+                continue
+            await asyncio.sleep(random.randrange(3, 8))
+            news.append(new)
+        return news
 
-        if not response:
-            print(f"Ошибка запроса {__name__}")
-            return []
-
-        soup = BeautifulSoup(response, 'lxml')
-
+    async def find_news_urls(self, max_news=3) -> list[str]:
+        urls = []
+        url = self.__news_url
+        soup = await self.get_soup(url=url)
         articles_block = soup.find('div', class_='newsblock-2')
         articles = articles_block.find_all('div', class_='nblock', limit=10)
         urls = []
 
         for article in articles:
-            try:
-                link = 'https://www.gazeta.uz' + article.find_next('a').get('href')
-                urls.append(link)
-            except Exception as ex:
-                print(ex)
-                continue
+            link = 'https://www.gazeta.uz' + article.find_next('a').get('href')
+            urls.append(link)
+        return urls
 
-        for url in urls:
-            try:
-                post = await self.get_new(url)
-                await asyncio.sleep(random.choice(range(5)))
-            except Exception as ex:
-                print(ex)
-                continue
+    def find_title(self, soup) -> str | None:
+        title = soup.find('h1', attrs={'id': 'article_title'}).text.replace('\xa0', ' ').strip()
+        return title
 
-            if post is None:
-                continue
-
-            posts.append(post)
-
-            if len(posts) >= max_news:
-                break
-        return posts
-
-    async def get_new(self, url: str):
-        response = await self._make_async_request(url, referer=self.referer)
-
-        if not response:
-            print(f"Ошибка запроса {__name__}")
-            return
-
-        soup = BeautifulSoup(response, 'lxml')
-        try:
-            title = soup.find('h1', attrs={'id': 'article_title'}).text.replace('\xa0', ' ').strip()
-        except AttributeError:
-            print(f'Title not find in {__name__}. URL: {url}')
-            return None
-
-        date = datetime.now(tz=timezone.utc)
-
+    def find_body(self, soup) -> str | None:
         content = ""
 
         main_div = soup.find('div', attrs={'itemprop': 'articleBody'})
         ps = main_div.find_all('p')
         for p in ps:
             content += p.text.replace('\xa0', ' ').strip() + '\n'
+        return content
 
+    def find_photos(self, soup) -> list[str] | list:
         image_urls = []
 
         images = soup.find_all('a', class_='lightbox-img')
         if images:
             for image in images:
                 image_urls.append(image.get('href'))
+        return image_urls
 
-        post = Post(title=title, body=content, image_links=image_urls, date=date, link=url)
-        return post
+
+async def test():
+    parser = TashkentParser()
+    urls = await parser.find_news_urls()
+    # print(urls)
+    print(await parser.get_news(urls))
 
 
 if __name__ == '__main__':
-    asyncio.run(GazetaTashkentParser().get_new_news())
+    asyncio.run(test())

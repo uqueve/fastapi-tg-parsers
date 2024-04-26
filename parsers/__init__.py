@@ -5,7 +5,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from bot.main import send_news
 from database.mongo import mongo
-from parsers.base_parser import BaseParser
+from parsers.models.base import BaseParser
 from utils.dict_parsers import get_parser_object
 from utils.exceptions.telegram import TelegramSendException
 from utils.models import SiteModel, Post, CitySchema
@@ -25,23 +25,33 @@ async def parse_news():
     for city in SiteModel:
         try:
             parser_obj: BaseParser = get_parser_object.get(city)
+
             if not parser_obj:
                 continue
-            news_posts: list[Post] = await parser_obj.get_new_news(max_news=3)
+
+            urls: list = await parser_obj.find_news_urls()
+
+            for url in urls:
+                if mongo.is_news_exists_by_link(link=url):
+                    urls.remove(url)
+
+            news_posts: list[Post] = await parser_obj.get_news(urls)
+
             if not news_posts:
                 logger.info(f'Нет новостей в городе {str(city)}')
                 continue
+
             for post in news_posts:
-                if not mongo.is_news_exists_by_link(link=post.link):
-                    city_data = mongo.get_city_data_by_city(city=city)
-                    post.city = CitySchema(
-                        oid=city_data.get('oid'),
-                        name=city_data.get('name'),
-                        ru=city_data.get('ru')
-                    )
-                    post.oid = str(uuid4())
-                    mongo.add_one_news(post=post)
-                    n += 1
+                city_data = mongo.get_city_data_by_city(city=city)
+                post.city = CitySchema(
+                    oid=city_data.get('oid'),
+                    name=city_data.get('name'),
+                    ru=city_data.get('ru')
+                )
+                post.oid = str(uuid4())
+
+                mongo.add_one_news(post=post)
+                n += 1
         except Exception as e:
             logger.exception(f'Error with parsing posts: {e}')
             continue

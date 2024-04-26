@@ -1,14 +1,12 @@
 import asyncio
 import random
+from dataclasses import dataclass
 
-import dateparser
-from dateutil import parser
 from bs4 import BeautifulSoup
 
-from datetime import datetime, timezone
-
+from parsers.models.base import BaseParser
+from parsers.models.request import BaseRequest
 from utils.models import Post
-from parsers.base_parser import BaseParser
 
 
 headers = {
@@ -28,11 +26,37 @@ headers = {
 }
 
 
-class UralwebEkatParser(BaseParser):
+@dataclass
+class UralwebEkatParser(BaseParser, BaseRequest):
     name = 'ekaterinburg'
     __base_url = 'https://www.uralweb.ru/'
     __news_url = __base_url + 'news/'
     referer = 'https://www.uralweb.ru/news/'
+
+    async def get_news(self, urls) -> list[Post]:
+        news = []
+        for new_url in urls:
+            if len(news) >= self.max_news:
+                return news
+            soup = await self.get_soup(new_url, headers=headers, referer=self.referer)
+            new = self.get_new(soup, url=new_url)
+            if not new:
+                continue
+            await asyncio.sleep(random.randrange(3, 8))
+            news.append(new)
+        return news
+
+    async def find_news_urls(self, max_news=3) -> list[str]:
+        urls = []
+        url = self.__news_url
+        soup = await self.get_soup(url=url, headers=headers)
+        main_div = soup.find('div', class_='news-box')
+        articles = main_div.find_all('li', class_='clearfix', limit=10)
+        for article in articles:
+            url_raw = article.find_next('div', class_='ln-ann').find('a').get('href').replace('#comments', '')
+            url = 'https://www.uralweb.ru' + url_raw
+            urls.append(url)
+        return urls
 
     async def get_new_news(self, last_news_date=None, max_news=10) -> [Post]:
         response = await self._make_async_request(self.__news_url, headers=headers)
@@ -44,54 +68,14 @@ class UralwebEkatParser(BaseParser):
 
         soup = BeautifulSoup(response, 'lxml')
 
-        main_div = soup.find('div', class_='news-box')
-        articles = main_div.find_all('li', class_='clearfix', limit=10)
-        urls = []
-        for article in articles:
-            try:
-                url_raw = article.find_next('div', class_='ln-ann').find('a').get('href').replace('#comments', '')
-                url = 'https://www.uralweb.ru' + url_raw
-                urls.append(url)
-            except Exception as ex:
-                print(ex)
-                continue
-
-        for url in urls:
-            try:
-                post = await self.get_new(url)
-                await asyncio.sleep(random.choice(range(5)))
-            except Exception as ex:
-                print(ex)
-                continue
-
-            if post is None:
-                continue
-
-            posts.append(post)
-
-            if len(posts) >= max_news:
-                break
-
-        return posts
-
-    async def get_new(self, url):
-        response = await self._make_async_request(url, referer=self.referer, headers=headers)
-
-        if not response:
-            print(f"Ошибка запроса {__name__}")
-            return None
-
-        soup = BeautifulSoup(response, 'lxml')
+    def find_title(self, soup) -> str | None:
         title_ = soup.find('h1')
-
-        try:
-            title = title_.text.replace('\xa0', ' ').strip()
-        except AttributeError:
-            print(f'Title not find in {__name__}. URL: {url}')
+        if not title_:
             return None
+        title = title_.text.replace('\xa0', ' ').strip()
+        return title
 
-        date = datetime.now(tz=timezone.utc)
-
+    def find_body(self, soup) -> str | None:
         content = ""
         div_c = soup.find('div', class_='n-ict clearfix news-detail-body')
         div_p = div_c.find_all('p')
@@ -100,7 +84,9 @@ class UralwebEkatParser(BaseParser):
                 content += p.text.replace('\xa0', ' ').strip() + '\n'
             except AttributeError:
                 continue
+        return content
 
+    def find_photos(self, soup) -> list[str] | list:
         image_urls = []
 
         photo = soup.find('div', attrs={'id': 'photoblock'})
@@ -109,10 +95,15 @@ class UralwebEkatParser(BaseParser):
             if photo:
                 photo = photo.get('src').split('?')[0]
                 image_urls.append('https:' + photo)
+        return image_urls
 
-        post = Post(title=title, body=content, image_links=image_urls, date=date, link=url)
-        return post
+
+async def test():
+    parser = UralwebEkatParser()
+    urls = await parser.find_news_urls()
+    # print(urls)
+    print(await parser.get_news(urls))
 
 
 if __name__ == '__main__':
-    asyncio.run(UralwebEkatParser().get_new_news(max_news=1))
+    asyncio.run(test())

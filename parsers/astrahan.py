@@ -1,11 +1,13 @@
 import asyncio
 import random
+from dataclasses import dataclass
 
 from bs4 import BeautifulSoup
 from datetime import datetime, timezone
 
+from parsers.models.base import BaseParser
+from parsers.models.request import BaseRequest
 from utils.models import Post
-from parsers.base_parser import BaseParser
 
 
 headers = {
@@ -26,87 +28,76 @@ headers = {
 }
 
 
-class AstrahanParser(BaseParser):
+@dataclass
+class AstrahanParser(BaseParser, BaseRequest):
     name = 'astrahan'
     __base_url = 'https://ast.mk.ru'
     __news_url = __base_url + '/news/'
     referer = 'https://ast.mk.ru/'
 
-    async def get_new_news(self, last_news_date=None, max_news=3) -> [Post]:
-        response = await self._make_async_request(self.__news_url, headers=headers)
-        posts = []
+    async def get_news(self, urls) -> list[Post]:
+        news = []
+        for new_url in urls:
+            if len(news) >= self.max_news:
+                return news
+            soup = await self.get_soup(new_url, headers=headers, referer=self.referer)
+            new = self.get_new(soup, url=new_url)
+            if not new:
+                continue
+            await asyncio.sleep(random.randrange(3, 5))
+            news.append(new)
+        return news
 
-        if not response:
-            print(f"Ошибка запроса {__name__}")
-            return []
-
-        soup = BeautifulSoup(response, 'lxml')
-
+    async def find_news_urls(self, max_news=3) -> list[str]:
         urls = []
+        url = self.__news_url
+        soup = await self.get_soup(url=url, headers=headers)
         today_news_block = soup.find('ul', class_='news-listing__day-list')
         news = today_news_block.find_all('a', class_='news-listing__item-link')
-
         for new in news:
             url = new.get('href')
             urls.append(url)
+        return urls
 
-        for url in urls:
-            try:
-                post = await self.get_new(url)
-                await asyncio.sleep(random.choice(range(5)))
-            except Exception as ex:
-                continue
-
-            if post is None:
-                continue
-
-            posts.append(post)
-
-            if len(posts) >= max_news:
-                break
-        return posts
-
-    async def get_new(self, url):
-        response = await self._make_async_request(url, referer=self.referer)
-
-        if not response:
-            print(f"Ошибка запроса {__name__}")
-            return None
-
-        soup = BeautifulSoup(response, 'lxml')
+    def find_title(self, soup) -> str | None:
 
         main_block = soup.find('main', class_='article')
 
         if not main_block:
             return
 
-        try:
-            title = main_block.find('h1', class_='article__title').text.strip()
-        except AttributeError:
-            print(f'Title not find in {__name__}. URL: {url}')
-            return None
+        title = main_block.find('h1', class_='article__title').text.strip()
+        return title
 
-        date = datetime.now(tz=timezone.utc)
-
+    def find_body(self, soup) -> str | None:
         content = ""
-
+        main_block = soup.find('main', class_='article')
         contents_div = main_block.find('div', class_='article__body')
         contents = contents_div.find_all('p')
         for con in contents:
             content += con.text.replace('\xa0', ' ').strip() + '\n'
         if 'Erid' in content:
             return
+        return content
 
+    def find_photos(self, soup) -> list[str] | list:
         image_urls = []
+        main_block = soup.find('main', class_='article')
         photo_div = main_block.find('img', class_='article__picture-image')
 
         if photo_div:
             photo = photo_div.get('src')
             image_urls.append(photo)
 
-        post = Post(title=title, body=content, image_links=image_urls, date=date, link=url)
-        return post
+        return image_urls
+
+
+async def test():
+    parser = AstrahanParser()
+    urls = await parser.find_news_urls()
+    # print(urls)
+    print(await parser.get_news(urls))
 
 
 if __name__ == '__main__':
-    asyncio.run(AstrahanParser().get_new_news())
+    asyncio.run(test())
