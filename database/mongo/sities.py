@@ -35,4 +35,9 @@ cities = [
     {'city': SiteModel.SOROCHINSK, 'channel_tg_id': -1002011478896, 'ru': 'Сорочинск', 'oid': '18'},
     {'city': SiteModel.SMOLENSK, 'channel_tg_id': -1002058539834, 'ru': 'Смоленск', 'oid': '19'},
     {'city': SiteModel.TUMEN, 'channel_tg_id': -1002001813291, 'ru': 'Тюмень', 'oid': '20'},
+    {'city': SiteModel.BELGOROD, 'channel_tg_id': -1002132123162, 'ru': 'Белгород', 'oid': '21'},
+    {'city': SiteModel.IRKUTSK, 'channel_tg_id': -1002121446881, 'ru': 'Иркутск', 'oid': '22'},
+    {'city': SiteModel.MAGADAN, 'channel_tg_id': -1002045273161, 'ru': 'Магадан', 'oid': '23'},
+    {'city': SiteModel.MURMANSK, 'channel_tg_id': -1002030948880, 'ru': 'Мурманск', 'oid': '24'},
+    {'city': SiteModel.SAMARA, 'channel_tg_id': -1002064479719, 'ru': 'Самара', 'oid': '25'},
 ]

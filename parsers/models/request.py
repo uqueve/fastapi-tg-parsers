@@ -58,7 +58,7 @@ class BaseRequest:
                 else:
                     return await response.json()
         except TimeoutError:
-            retries = 0
+            retries = 1
 
             while retries <= 3:
                 logger.warning(f'TimeoutError. Ещё одна попытка запроса: {retries}...')

@@ -13,14 +13,19 @@ from utils.text_sevice import to_chunks
 class SiteModel(StrEnum):
     ALMATA = auto()
     ASTRAHAN = auto()
+    BELGOROD = auto()
     BRYANSK = auto()
     CHELYABINSK = auto()
     CHEREPOVEC = auto()
     CHITA = auto()
     TASHKENT = auto()
+    IRKUTSK = auto()
     KRASNODAR = auto()
+    MAGADAN = auto()
+    MURMANSK = auto()
     NOVOKUZNETSK = auto()
     BAKU = auto()
+    SAMARA = auto()
     SMOLENSK = auto()
     SOROCHINSK = auto()
     STAVROPOL = auto()
@@ -31,6 +36,7 @@ class SiteModel(StrEnum):
     URALSK = auto()
     EKATERINBURG = auto()
     VLADIVOSTOK = auto()
+
 
 
 @dataclass

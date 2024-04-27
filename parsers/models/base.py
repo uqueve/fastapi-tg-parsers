@@ -30,19 +30,25 @@ class BaseParser(ABC):
         raise NotImplementedError
 
     def get_new(self, soup: BeautifulSoup | dict, url: str) -> Post | None:
+        title = None
         try:
             title = self.find_title(soup)
-        except AttributeError:
-            title = None
+        except AttributeError as ex:
+            print(ex)
 
         if not title:
             return None
 
+        body = None
         try:
             body = self.find_body(soup)
         except Exception as ex:
             print(ex)
 
+        if not body:
+            return None
+
+        image_links = []
         try:
             image_links = self.find_photos(soup)
         except Exception as ex:

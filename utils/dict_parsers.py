@@ -20,19 +20,29 @@ from parsers.ulanude import UlanUdeParser
 from parsers.uralsk import UralskParser
 from parsers.uralweb_ekat import UralwebEkatParser
 from parsers.vladivostok import VladivostokParser
+from parsers.irkutsk import IrkutskParser
+from parsers.magadan import MagadanParser
+from parsers.murmansk import MurmanskParser
+from parsers.samara import SamaraParser
+from parsers.belgorod import BelgorodParser
 
 
 get_parser_object = {
     SiteModel.ALMATA: AlmataParser(),
     SiteModel.ASTRAHAN: AstrahanParser(),
+    SiteModel.BELGOROD: BelgorodParser(),
     SiteModel.BRYANSK: BryanskParser(),
     SiteModel.CHELYABINSK: ChelyabinskParser(),
     SiteModel.CHEREPOVEC: CherepovecParser(),
     SiteModel.CHITA: ChitaParser(),
     SiteModel.TASHKENT: TashkentParser(),
+    SiteModel.IRKUTSK: IrkutskParser(),
     SiteModel.KRASNODAR: KrasnodarParser(),
+    SiteModel.MAGADAN: MagadanParser(),
+    SiteModel.MURMANSK: MurmanskParser(),
     SiteModel.NOVOKUZNETSK: NovokuznetskParser(),
     SiteModel.BAKU: ReportBakuParser(),
+    SiteModel.SAMARA: SamaraParser(),
     SiteModel.SMOLENSK: SmolenskParser(),
     SiteModel.SOROCHINSK: SorochinskParser(),
     SiteModel.STAVROPOL: StavropolParser(),
