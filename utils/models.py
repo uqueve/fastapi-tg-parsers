@@ -38,7 +38,6 @@ class SiteModel(StrEnum):
     VLADIVOSTOK = auto()
 
 
-
 @dataclass
 class CitySchema:
     oid: str

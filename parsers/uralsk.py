@@ -10,12 +10,20 @@ from utils.models import Post
 
 
 headers = {
+    'Accept': 'text/html, */*; q=0.01',
+    'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,ja;q=0.6',
+    'Connection': 'keep-alive',
     'DNT': '1',
-    'Upgrade-Insecure-Requests': '1',
-    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-    'sec-ch-ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"',
+    'Referer': 'https://24.kz/ru/news/social/itemlist/tag/%D0%A3%D1%80%D0%B0%D0%BB%D1%8C%D1%81%D0%BA',
+    'Sec-Fetch-Dest': 'empty',
+    'Sec-Fetch-Mode': 'cors',
+    'Sec-Fetch-Site': 'same-origin',
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    'X-Requested-With': 'XMLHttpRequest',
+    'sec-ch-ua': '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
     'sec-ch-ua-mobile': '?0',
     'sec-ch-ua-platform': '"Linux"',
+    'sec-gpc': '1',
 }
 
 
@@ -26,7 +34,9 @@ class UralskParser(BaseParser, BaseRequest):
     __news_url = __base_url + '/ru/news/social/itemlist/tag/%D0%A3%D1%80%D0%B0%D0%BB%D1%8C%D1%81%D0%BA'
     referer = 'https://24.kz/ru/news/social/itemlist/tag/%D0%A3%D1%80%D0%B0%D0%BB%D1%8C%D1%81%D0%BA'
 
-    async def get_news(self, urls) -> list[Post]:
+    async def get_news(self, urls, max_news: int | None = None) -> list[Post]:
+        if max_news:
+            self.max_news = max_news
         news = []
         for new_url in urls:
             if len(news) >= self.max_news:
@@ -39,23 +49,21 @@ class UralskParser(BaseParser, BaseRequest):
             news.append(new)
         return news
 
-    async def find_news_urls(self, max_news=3) -> list[str]:
+    async def find_news_urls(self) -> list[str]:
         urls = []
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers)
-        main_div = soup.find('section', attrs={'id': 'k2Container'})
-
-        urls = []
-        articles = main_div.find_all('div', class_='entry-block', limit=max_news)
+        main_div = soup.find('div', attrs={'id': 'k2Container'})
+        articles = main_div.find_all('div', class_='col-md-3', limit=15)
 
         for article in articles:
-            div = article.find_next('a', class_='img-link')
+            div = article.find_next('a')
             url = self.__base_url + div.get('href')
             urls.append(url)
         return urls
 
     def find_title(self, soup) -> str | None:
-        title_ = soup.find('h1', class_='entry-title')
+        title_ = soup.find('h1', class_='single-post__entry-title')
         if not title_:
             return None
         title = title_.text.replace('\xa0', ' ').strip()
@@ -63,7 +71,7 @@ class UralskParser(BaseParser, BaseRequest):
 
     def find_body(self, soup) -> str | None:
         content = ""
-        div = soup.find('div', class_='entry-content')
+        div = soup.find('div', class_='entry__article')
         div_p = div.find_all('p')
         for p in div_p:
             content += p.text.replace('\xa0', ' ').strip() + '\n'

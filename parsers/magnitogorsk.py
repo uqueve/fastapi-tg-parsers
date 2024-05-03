@@ -15,7 +15,8 @@ headers = {
     'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,ja;q=0.6',
     'cache-control': 'max-age=0',
     'dnt': '1',
-    'sec-ch-ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"',
+    'priority': 'u=0, i',
+    'sec-ch-ua': '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
     'sec-ch-ua-mobile': '?0',
     'sec-ch-ua-platform': '"Linux"',
     'sec-fetch-dest': 'document',
@@ -24,16 +25,16 @@ headers = {
     'sec-fetch-user': '?1',
     'sec-gpc': '1',
     'upgrade-insecure-requests': '1',
-    'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+    'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
 }
 
 
 @dataclass
-class ChitaParser(BaseParser, BaseRequest):
-    name = 'chita'
-    __base_url = 'https://www.mkchita.ru'
-    __news_url = __base_url + '/news/'
-    referer = 'https://www.mkchita.ru/'
+class MagnitogorskParser(BaseParser, BaseRequest):
+    name = 'magnitogorsk'
+    __base_url = 'https://mr-info.ru'
+    __news_url = 'https://mr-info.ru/category/news'
+    referer = 'https://mr-info.ru/category/news'
 
     async def get_news(self, urls, max_news: int | None = None) -> list[Post]:
         if max_news:
@@ -54,31 +55,34 @@ class ChitaParser(BaseParser, BaseRequest):
         urls = []
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers)
-        today_news_block = soup.find('ul', class_='news-listing__day-list')
-        news = today_news_block.find_all('a', class_='news-listing__item-link')
+        news = soup.find_all('article', class_=lambda value: find_value(value, 'jeg_post jeg_pl_md_card'))
 
         for new in news:
-            url = new.get('href')
+            url = new.find('a')
+            if url:
+                url = url.get('href')
             urls.append(url)
         return urls
 
     def find_title(self, soup) -> str | None:
-        main_block = soup.find('main', class_='article')
-
-        if not main_block:
-            return None
-
-        title = main_block.find('h1', class_='article__title').text.strip()
-
+        title = soup.find('h1', class_='jeg_post_title')
+        if not title:
+            return
+        title = title.text.strip()
         return title
 
     def find_body(self, soup) -> str | None:
         content = ""
 
-        main_block = soup.find('main', class_='article')
-        contents_div = main_block.find('div', class_='article__body')
-        contents = contents_div.find_all('p')
+        main_block = soup.find('div', class_=lambda value: find_value(value, 'content-inner'))
+        if not main_block:
+            return
+        contents = main_block.find_all('p')
         for con in contents:
+            if not con:
+                continue
+            if con.text.replace('\xa0', ' ').strip() == 'Фото архив редакции':
+                continue
             content += con.text.replace('\xa0', ' ').strip() + '\n'
         if 'Erid' in content:
             return None
@@ -86,17 +90,41 @@ class ChitaParser(BaseParser, BaseRequest):
 
     def find_photos(self, soup) -> list[str] | list:
         image_urls = []
-        main_block = soup.find('main', class_='article')
-        photo_div = main_block.find('img', class_='article__picture-image')
+        image_raw = soup.find('div', class_='jeg_featured featured_image ')
 
-        if photo_div:
-            photo = photo_div.get('src')
+        if image_raw:
+            photo = image_raw.find('a')
+            if not photo:
+                return image_urls
+            photo = photo.get('src')
             image_urls.append(photo)
+
+        main_block = soup.find('div', class_=lambda value: find_value(value, 'content-inner'))
+        if not main_block:
+            return image_urls
+        images_blocks = main_block.find_all('figure', class_='wp-block-image size-full')
+        for image_raw in images_blocks:
+            if not image_raw:
+                continue
+            image_raw = image_raw.find('img')
+            if image_raw:
+                image = image_raw.get('src')
+                image_urls.append(image)
+        if len(image_urls) >= 10:
+            image_urls = image_urls[:9]
         return image_urls
 
 
+def find_value(value, example):
+    if value:
+        if value.startswith(example):
+            return True
+        return False
+    return False
+
+
 async def test():
-    parser = ChitaParser()
+    parser = MagnitogorskParser()
     urls = await parser.find_news_urls()
     # print(urls)
     print(await parser.get_news(urls))

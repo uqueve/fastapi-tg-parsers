@@ -36,7 +36,9 @@ class CherepovecParser(BaseParser, BaseRequest):
     __news_url = __base_url + '/news'
     referer = 'https://cherinfo.ru/news'
 
-    async def get_news(self, urls) -> list[Post]:
+    async def get_news(self, urls, max_news: int | None = None) -> list[Post]:
+        if max_news:
+            self.max_news = max_news
         news = []
         for new_url in urls:
             if len(news) >= self.max_news:
@@ -49,7 +51,7 @@ class CherepovecParser(BaseParser, BaseRequest):
             news.append(new)
         return news
 
-    async def find_news_urls(self, max_news=3) -> list[str]:
+    async def find_news_urls(self) -> list[str]:
         urls = []
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers)

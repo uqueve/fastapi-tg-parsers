@@ -12,58 +12,57 @@ from utils.models import Post
 class BaseParser(ABC):
 
     max_news: int = 3
+    title: str | None = None
+    body: str | None = None
+    image_links: list[str] = field(default_factory=list)
+    date: datetime = field(default_factory=datetime.now)
 
     @abstractmethod
     async def find_news_urls(self) -> list[str]:
         raise NotImplementedError
 
     @abstractmethod
-    def find_title(self, *args) -> str | None:
+    def find_title(self, soup: BeautifulSoup | dict) -> str | None:
         raise NotImplementedError
 
     @abstractmethod
-    def find_body(self, *args) -> str | None:
+    def find_body(self, soup: BeautifulSoup | dict) -> str | None:
         raise NotImplementedError
 
     @abstractmethod
-    def find_photos(self, *args) -> list[str] | list:
+    def find_photos(self, soup: BeautifulSoup | dict) -> list[str] | list:
         raise NotImplementedError
 
     def get_new(self, soup: BeautifulSoup | dict, url: str) -> Post | None:
-        title = None
         try:
-            title = self.find_title(soup)
+            self.title = self.find_title(soup)
         except AttributeError as ex:
             print(ex)
 
-        if not title:
+        if not self.title:
             return None
 
-        body = None
         try:
-            body = self.find_body(soup)
+            self.body = self.find_body(soup)
         except Exception as ex:
             print(ex)
 
-        if not body:
+        if not self.body:
             return None
 
-        image_links = []
         try:
-            image_links = self.find_photos(soup)
+            self.image_links = self.find_photos(soup)
         except Exception as ex:
             print(ex)
-
-        date = datetime.now()
 
         return Post(
-            title=title,
-            body=body,
-            image_links=image_links,
-            date=date,
+            title=self.title,
+            body=self.body,
+            image_links=self.image_links,
+            date=self.date,
             link=url,
         )
 
     @abstractmethod
-    async def get_news(self, *args) -> list[Post]:
+    async def get_news(self, urls: list[str], max_news: int = 3) -> list[Post]:
         raise NotImplementedError

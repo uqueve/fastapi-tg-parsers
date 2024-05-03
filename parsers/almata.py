@@ -37,7 +37,9 @@ class AlmataParser(BaseParser, BaseRequest):
     __news_url = __base_url + 'news'
     referer = 'https://www.inalmaty.kz/news'
 
-    async def get_news(self, urls) -> list[Post]:
+    async def get_news(self, urls, max_news: int | None = None) -> list[Post]:
+        if max_news:
+            self.max_news = max_news
         news = []
         for url in urls:
             if len(news) >= self.max_news:

@@ -8,7 +8,7 @@ from utils.models import Post, PostOut, CitySchema, SiteModel
 logger = logging.getLogger(__name__)
 
 
-def get_unread_news(city: SiteModel | None):
+def get_unread_news(city: str | None):
     news_list = []
     news = mongo.get_unread_news(city)
     for new in news:

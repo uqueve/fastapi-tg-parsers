@@ -1,6 +1,7 @@
 import asyncio
 import random
 from dataclasses import field, dataclass
+from datetime import datetime
 
 from bs4 import BeautifulSoup
 
@@ -20,7 +21,7 @@ headers = {
     'sec-ch-ua-platform': '"Linux"',
     'sec-fetch-dest': 'document',
     'sec-fetch-mode': 'navigate',
-    'sec-fetch-site': 'cross-site',
+    'sec-fetch-site': 'none',
     'sec-fetch-user': '?1',
     'sec-gpc': '1',
     'upgrade-insecure-requests': '1',
@@ -29,11 +30,12 @@ headers = {
 
 
 @dataclass
-class IrkutskParser(BaseParser, BaseRequest):
-    name: str = 'irkutsk'
-    __base_url: str = 'https://www.irk.ru'
-    __news_url: str = 'https://www.irk.ru/news/'
-    referer: str = 'https://www.irk.ru/news/'
+class VolgogradParser(BaseParser, BaseRequest):
+    name: str = 'volgograd'
+    __base_url: str = 'https://v1.ru'
+    __news_url: str = 'https://v1.ru/'
+    referer: str = 'https://v1.ru/'
+    # TODO: ddos-guard
 
     async def get_news(self, urls, max_news: int | None = None) -> list[Post]:
         if max_news:
@@ -46,7 +48,7 @@ class IrkutskParser(BaseParser, BaseRequest):
             new = self.get_new(soup, url=new_url)
             if not new:
                 continue
-            await asyncio.sleep(random.randrange(3, 8))
+            await asyncio.sleep(random.randrange(8, 15))
             news.append(new)
         return news
 
@@ -54,17 +56,19 @@ class IrkutskParser(BaseParser, BaseRequest):
         urls = []
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers)
-        items = soup.find_all('li', class_=lambda v: find_value(v, 'b-news-article-list-item'), limit=15)
+        items = soup.find_all('li', class_='DxeBN', limit=15)
         for item in items:
-            url_raw = item.find('a')
+            url_raw = item.find_next('a')
             if not url_raw:
                 continue
-            url = self.__base_url + url_raw.get('href')
+            url = url_raw.get('href')
+            if not url.startswith('https:'):
+                url = self.__base_url + url
             urls.append(url)
         return urls
 
     def find_title(self, soup: BeautifulSoup) -> str | None:
-        title = soup.find('h1', class_='lenta-article__title')
+        title = soup.find('h1', class_='title_ip27z')
         if not title:
             return None
         title = title.text.replace('\xa0', ' ').strip()
@@ -72,22 +76,21 @@ class IrkutskParser(BaseParser, BaseRequest):
 
     def find_body(self, soup: BeautifulSoup) -> str | None:
         body = ''
-        content = soup.find('div', class_='lenta-article__text j-material-text j-copyright-insert')
-        if not content:
-            return None
-        ps = content.find_all('p')
-        for p in ps:
+        divs = soup.find_all('div', class_='uiArticleBlockText_i9h2o text-style-body-1 c-text block_fefJj')
+        for div in divs:
+            p = div.find('p')
+            if not p:
+                continue
             body += p.text.replace('\xa0', ' ').strip()
-            body += '\n'
         return body
 
     def find_photos(self, soup: BeautifulSoup) -> list:
         photos = []
-        content_div = soup.find('figure', class_='lenta-article__figure')
-        if content_div:
-            photo_divs = content_div.find('a')
-            if photo_divs:
-                photos.append(photo_divs.get('href'))
+        photo_divs = soup.find_all('div', 'imageWrapper_nZVrb')
+        for photo_div in photo_divs:
+            if photo_div:
+                photo = photo_div.find('img', class_='image_nZVrb').get('src')
+                photos.append(photo)
         return photos
 
 
@@ -100,7 +103,7 @@ def find_value(value, example):
 
 
 async def test():
-    parser = IrkutskParser()
+    parser = VolgogradParser()
     urls = await parser.find_news_urls()
     # print(urls)
     print(await parser.get_news(urls))

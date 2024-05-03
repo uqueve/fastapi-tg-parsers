@@ -18,7 +18,7 @@ headers = {
     'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,ja;q=0.6',
     'Connection': 'keep-alive',
     'DNT': '1',
-    'Referer': 'https://ria.ru/amp/location_Belgorod/',
+    'Referer': 'https://ria.ru/amp/location_Georgia/',
     'Sec-Fetch-Dest': 'empty',
     'Sec-Fetch-Mode': 'cors',
     'Sec-Fetch-Site': 'same-origin',
@@ -31,11 +31,11 @@ headers = {
 
 
 @dataclass
-class BelgorodParser(BaseParser, BaseRequest):
-    name = 'belgorod'
+class TbilisiParser(BaseParser, BaseRequest):
+    name = 'tbilisi'
     __base_url = 'https://ria.ru'
-    __news_url = __base_url + '/amp/location_Belgorod/more.json'
-    referer = 'https://ria.ru/amp/location_Belgorod/'
+    __news_url = __base_url + '/amp/location_Georgia/more.json'
+    referer = 'https://ria.ru/amp/location_Georgia/'
 
     async def get_news(self, urls, max_news: int | None = None) -> list[Post]:
         if max_news:
@@ -89,7 +89,7 @@ class BelgorodParser(BaseParser, BaseRequest):
 
 
 async def test():
-    parser = BelgorodParser()
+    parser = TbilisiParser()
     urls = await parser.find_news_urls()
     # print(urls)
     print(await parser.get_news(urls))

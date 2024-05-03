@@ -1,4 +1,5 @@
 import logging
+from copy import copy
 from uuid import uuid4
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -30,18 +31,22 @@ async def parse_news():
                 continue
 
             urls: list = await parser_obj.find_news_urls()
-
+            final_urls = copy(urls)
             for url in urls:
-                if mongo.is_news_exists_by_link(link=url):
-                    urls.remove(url)
+                if mongo.is_news_exists_by_link(link=url) is True:
+                    final_urls.remove(url)
 
-            news_posts: list[Post] = await parser_obj.get_news(urls)
-
-            if not news_posts:
+            if not final_urls:
                 logger.info(f'Нет новостей в городе {str(city)}')
                 continue
 
+            news_posts: list[Post] = await parser_obj.get_news(final_urls)
+
             for post in news_posts:
+
+                if mongo.is_news_exists_by_title(title=post.title) is True:
+                    continue
+
                 city_data = mongo.get_city_data_by_city(city=city)
                 post.city = CitySchema(
                     oid=city_data.get('oid'),

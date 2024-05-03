@@ -33,6 +33,11 @@ class NewsRepository:
         resp = collection.find_one(filter={'link': link})
         return bool(resp)
 
+    def is_news_exists_by_title(self, title):
+        collection = self.connection['news']
+        resp = collection.find_one(filter={'title': title})
+        return bool(resp)
+
     def add_one_news(self, post: Post):
         collection = self.connection['news']
         post_obj = post.model_dump()
@@ -40,7 +45,7 @@ class NewsRepository:
 
     def get_one_not_sent_news(self, city) -> Post | None:
         collection = self.connection['news']
-        _post = collection.find_one(filter={'city.name': str(city), 'posted': False})
+        _post = collection.find_one(filter={'city.name': str(city), 'posted': False}, sort=[('date', -1)])
         if _post:
             return Post(**_post)
         else:
@@ -62,11 +67,11 @@ class NewsRepository:
         collection = self.connection['news']
         collection.update_one(filter={"oid": news_id}, update={'$set': {"body": body}})
 
-    def get_unread_news(self, city: CitySchema | None):
+    def get_unread_news(self, city: str | None):
         collection = self.connection['news']
         if not city:
-            return collection.find(filter={"sent": False, "posted": True}).sort("date")
-        return collection.find(filter={"city.ru": city, "posted": True}).sort("date")
+            return collection.find(filter={"sent": False, "posted": True}).sort("date", -1)
+        return collection.find(filter={"city.ru": city, "posted": True}).sort("date", -1)
 
     def get_news_by_oid(self, oid: str):
         collection = self.connection['news']
