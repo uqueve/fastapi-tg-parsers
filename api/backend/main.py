@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.backend.news import news_router
 from api.backend.check import health_router
 from database.mongo.prepare import prepare_database
-from parsers import start_parsers
+from parsers.__main__ import start_parsers
 
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
