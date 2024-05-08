@@ -1,10 +1,12 @@
 import datetime as dt
+from typing import List
 from dataclasses import dataclass
-from typing import List, Optional
+from uuid import uuid4
 
-from bson import ObjectId
 from pydantic import BaseModel, Field
 from enum import StrEnum, auto, unique
+
+from utils.exceptions.post import *
 from utils.openai_service import OpenAIService
 from utils.text_sevice import to_chunks
 
@@ -22,6 +24,16 @@ class SiteModel(StrEnum):
     IRKUTSK = auto()
     KRASNODAR = auto()
     MAGADAN = auto()
+    MOSCOW = auto()
+    TBILISI = auto()
+    NARIN = auto()
+    MAGNITOGORSK = auto()
+    VLADIMIR = auto()
+    RIDDER = auto()
+    AKSAI = auto()
+    STEPNOGORSK = auto()
+    VOLGOGRAD = auto()
+    ARHANGELSK = auto()
     MURMANSK = auto()
     NOVOKUZNETSK = auto()
     BAKU = auto()
@@ -36,6 +48,13 @@ class SiteModel(StrEnum):
     URALSK = auto()
     EKATERINBURG = auto()
     VLADIVOSTOK = auto()
+    DNEPROPETROVSK = auto()
+    KALININGRAD = auto()
+    KARAKOL = auto()
+    KISHINEV = auto()
+    MINSK = auto()
+    OMSK = auto()
+    SANKT_PETERBURG = auto()
 
 
 @dataclass
@@ -63,16 +82,19 @@ class ErrorSchema(BaseModel):
 
 
 class Post(BaseModel):
-    oid: str | None = Field(None, alias='oid')
+    oid: str | None = Field(default_factory=uuid4)
     title: str | None = Field(default='')
     body: str | None = Field(default='')
-    image_links: List[str] | None = Field(default=[])
-    date: dt.datetime | None = Field(default=dt.datetime.now())
-    link: str | None = Field(default='')
+    image_links: List[str] | None = Field(default_factory=list)
+    date: dt.datetime | None = Field(default_factory=dt.datetime.now)
+    link: str | None = Field(default=None)
     city: CitySchema | None = Field(default=None)
     parser_name: str = Field(default='')
     posted: bool = Field(default=False)
     sent: bool = Field(default=False)
+
+    def model_post_init(self, __context):
+        self.oid = str(self.oid)
 
     def __str__(self):
         links = ''
@@ -80,6 +102,12 @@ class Post(BaseModel):
             links = '\n'.join(self.image_links)
 
         return f'{self.title}\n\n{self.body}\n\nlinks:\n{links}\n{self.date}'
+
+    def post_validate(self):
+        if not self.title:
+            raise PostNoTitleError(link=self.link)
+        if not self.body:
+            raise PostNoBodyError(link=self.link)
 
     def get_text(self):
         result = f'{self.title}\n\n{self.body}'

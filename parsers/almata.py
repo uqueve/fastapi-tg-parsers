@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
-from utils.models import Post
+from utils.models import Post, SiteModel
 
 headers = {
     'accept': 'application/json, text/plain, */*',
@@ -32,7 +32,8 @@ headers = {
 
 @dataclass
 class AlmataParser(BaseParser, BaseRequest):
-    name = 'almata'
+    city: SiteModel = SiteModel.ALMATA
+    name: str = 'almata'
     __base_url = 'https://www.inalmaty.kz/'
     __news_url = __base_url + 'news'
     referer = 'https://www.inalmaty.kz/news'

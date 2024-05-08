@@ -6,8 +6,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
-from utils.models import Post
-
+from utils.models import Post, SiteModel
 
 headers = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -31,6 +30,7 @@ headers = {
 
 @dataclass
 class MagadanParser(BaseParser, BaseRequest):
+    city: SiteModel = SiteModel.MAGADAN
     name: str = 'magadan'
     __base_url: str = 'https://kolyma.ru'
     __news_url: str = 'https://kolyma.ru/index.php?do=cat&category=news'

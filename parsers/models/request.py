@@ -2,16 +2,16 @@ import logging
 from typing import Any
 from collections import OrderedDict
 import aiohttp
-import requests
 from aiohttp import ClientTimeout, ClientResponse
 from bs4 import BeautifulSoup
 
-from utils.models import Post
 
 logger = logging.getLogger(__name__)
 
 
 class BaseRequest:
+
+    name: str | None = None
 
     headers = OrderedDict({
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
@@ -21,6 +21,7 @@ class BaseRequest:
         'Upgrade-Insecure-Requests': '1',
     })
 
+    # Proxy format
     # proxies = [
     #     {
     #         'url': 'http://46.3.147.105:8000',
@@ -50,7 +51,7 @@ class BaseRequest:
             timeout = ClientTimeout(total=10)
             async with aiohttp.request(method='GET', url=url, headers=headers, timeout=timeout) as response:
                 if response.status != 200:
-                    logger.warning(f'### {response.status}\t{self.name}\t{url}\n{await response.text()}')
+                    logger.warning(f'### {response.status}\t{self.name}\t{url}\nОтвет: {await response.text()}')
                     if self.proxies:
                         return await self.__make_async_request_with_proxies(url=url, json=json)
                 if not json:
@@ -61,12 +62,12 @@ class BaseRequest:
             retries = 1
 
             while retries <= 3:
-                logger.warning(f'TimeoutError. Ещё одна попытка запроса: {retries}...')
+                logger.warning(f'TimeoutError. Ещё одна попытка запроса: {retries}... Парсер: {self.name}. Url: {url}')
                 response = await self._retry_async_request(url=url, headers=headers, json=json, referer=referer)
                 if response:
                     return response
                 retries += 1
-            logger.warning(f'Попытки закончились, не могу подключиться. URL={url}\nЗаголовки: {headers}')
+            logger.warning(f'Попытки закончились, не могу подключиться. Парсер: {self.name}. URL={url}\nЗаголовки: {headers}')
             return None
 
         except Exception as e:
@@ -85,7 +86,8 @@ class BaseRequest:
                 if response.status != 200:
                     if self.proxies:
                         return await self.__make_async_request_with_proxies(url=url, json=json)
-                    logger.warning(f'### Retry request: {response.status}\t{self.name}\t{url}\n{await response.text()}')
+                    logger.warning(
+                        f'### Retry request: {response.status}\tПарсер: {self.name}\tURL: {url}\nОтвет: {await response.text()}')
                 if not json:
                     return await response.text()
                 else:

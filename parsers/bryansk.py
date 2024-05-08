@@ -7,11 +7,12 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
-from utils.models import Post
+from utils.models import Post, SiteModel
 
 
 @dataclass
 class BryanskParser(BaseParser, BaseRequest):
+    city: SiteModel = SiteModel.BRYANSK
     name: str = 'bryansk'
     __base_url: str = 'https://newsbryansk.ru/'
     __news_url: str = 'https://newsbryansk.ru/'

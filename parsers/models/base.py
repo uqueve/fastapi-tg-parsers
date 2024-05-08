@@ -1,16 +1,20 @@
 import json
+import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 
 from bs4 import BeautifulSoup, Tag
 
-from utils.models import Post
+from utils.models import Post, SiteModel
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
 class BaseParser(ABC):
-
+    city: SiteModel | None = None
+    name: str | None = None
     max_news: int = 3
     title: str | None = None
     body: str | None = None
@@ -37,7 +41,9 @@ class BaseParser(ABC):
         try:
             self.title = self.find_title(soup)
         except AttributeError as ex:
-            print(ex)
+            logger.error(f'TITLE ERROR: {ex}. Парсер: {self.name}. URL: {url}')
+        except Exception as ex:
+            logger.error(f'TITLE ERROR: {ex}. Парсер: {self.name}. URL: {url}')
 
         if not self.title:
             return None
@@ -45,7 +51,7 @@ class BaseParser(ABC):
         try:
             self.body = self.find_body(soup)
         except Exception as ex:
-            print(ex)
+            logger.error(f'BODY ERROR: {ex}. Парсер: {self.name}. URL: {url}')
 
         if not self.body:
             return None
@@ -53,7 +59,7 @@ class BaseParser(ABC):
         try:
             self.image_links = self.find_photos(soup)
         except Exception as ex:
-            print(ex)
+            logger.error(f'IMAGE LINKS ERROR: {ex}. Парсер: {self.name}. URL: {url}')
 
         return Post(
             title=self.title,

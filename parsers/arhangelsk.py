@@ -7,8 +7,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
-from utils.models import Post
-
+from utils.models import Post, SiteModel
 
 headers = {
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -31,6 +30,7 @@ headers = {
 
 @dataclass
 class ArhangelskParser(BaseParser, BaseRequest):
+    city: SiteModel = SiteModel.ARHANGELSK
     name: str = 'arhangelsk'
     __base_url: str = 'https://29.ru'
     __news_url: str = 'https://29.ru/'
@@ -86,7 +86,8 @@ class ArhangelskParser(BaseParser, BaseRequest):
 
     def find_photos(self, soup: BeautifulSoup) -> list:
         photos = []
-        photo_divs = soup.find_all('div', 'imageWrapper_nZVrb')
+        main_div = soup.find('div', class_='articleContent_fefJj')
+        photo_divs = main_div.find_all('div', 'imageWrapper_nZVrb')
         for photo_div in photo_divs:
             if photo_div:
                 photo = photo_div.find('img', class_='image_nZVrb').get('src')

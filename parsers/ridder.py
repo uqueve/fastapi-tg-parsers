@@ -6,8 +6,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
-from utils.models import Post
-
+from utils.models import Post, SiteModel
 
 headers = {
     'Accept': 'text/html, */*; q=0.01',
@@ -29,7 +28,8 @@ headers = {
 
 @dataclass
 class RidderParser(BaseParser, BaseRequest):
-    name = 'ridder'
+    city: SiteModel = SiteModel.RIDDER
+    name: str = 'ridder'
     __base_url = 'https://24.kz'
     __news_url = __base_url + '/ru/news/social/itemlist/tag/%D0%A0%D0%B8%D0%B4%D0%B4%D0%B5%D1%80'
     referer = 'https://24.kz/ru/news/social/itemlist/tag/%D0%A0%D0%B8%D0%B4%D0%B4%D0%B5%D1%80'

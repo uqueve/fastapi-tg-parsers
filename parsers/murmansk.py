@@ -6,8 +6,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
-from utils.models import Post
-
+from utils.models import Post, SiteModel
 
 headers = {
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -31,6 +30,7 @@ headers = {
 
 @dataclass
 class MurmanskParser(BaseParser, BaseRequest):
+    city: SiteModel = SiteModel.MURMANSK
     name: str = 'murmansk'
     __base_url: str = 'https://murman.tv/'
     __news_url: str = 'https://murman.tv/ct-n-2--news'

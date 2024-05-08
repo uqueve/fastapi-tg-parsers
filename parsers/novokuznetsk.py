@@ -7,8 +7,7 @@ from datetime import datetime, timezone
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
-from utils.models import Post
-
+from utils.models import Post, SiteModel
 
 headers = {
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -30,7 +29,8 @@ headers = {
 
 @dataclass
 class NovokuznetskParser(BaseParser, BaseRequest):
-    name = 'novokuznetsk'
+    city: SiteModel = SiteModel.NOVOKUZNETSK
+    name: str = 'novokuznetsk'
     __base_url = 'https://novokuznetsk.su'
     __news_url = __base_url
     referer = 'https://novokuznetsk.su/'

@@ -8,8 +8,7 @@ from datetime import datetime, timezone
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
-from utils.models import Post
-
+from utils.models import Post, SiteModel
 
 headers = {
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -31,7 +30,8 @@ headers = {
 
 @dataclass
 class CherepovecParser(BaseParser, BaseRequest):
-    name = 'cherepovec'
+    city: SiteModel = SiteModel.CHEREPOVEC
+    name: str = 'cherepovec'
     __base_url = 'https://cherinfo.ru'
     __news_url = __base_url + '/news'
     referer = 'https://cherinfo.ru/news'
@@ -56,7 +56,7 @@ class CherepovecParser(BaseParser, BaseRequest):
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers)
         main_articles = soup.find('div', class_='container content wrapper')
-        articles_block = main_articles.find_all('a', class_='lenta-title', limit=max_news)
+        articles_block = main_articles.find_all('a', class_='lenta-title', limit=self.max_news)
 
         for article in articles_block:
             try:

@@ -6,12 +6,13 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
-from utils.models import Post
+from utils.models import Post, SiteModel
 
 
 @dataclass
 class ReportBakuParser(BaseParser, BaseRequest):
-    name = 'baku'
+    city: SiteModel = SiteModel.BAKU
+    name: str = 'baku'
     __base_url = 'https://report.az'
     __news_url = __base_url + '/ru/news-feed/'
     referer = 'https://report.az/ru/'

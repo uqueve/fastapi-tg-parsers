@@ -13,9 +13,9 @@ class NewsRepository:
         city = collection.find_one(filter={'name': city_name})
         return city.get('id')
 
-    def get_city_data_by_city(self, city: SiteModel):
+    def get_city_data_by_city(self, city: str):
         collection = self.connection['cities']
-        city_data = collection.find_one(filter={'name': str(city)})
+        city_data = collection.find_one(filter={'name': city})
         return city_data
 
     def _get_all_cities(self):

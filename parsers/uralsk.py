@@ -6,8 +6,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
-from utils.models import Post
-
+from utils.models import Post, SiteModel
 
 headers = {
     'Accept': 'text/html, */*; q=0.01',
@@ -29,7 +28,8 @@ headers = {
 
 @dataclass
 class UralskParser(BaseParser, BaseRequest):
-    name = 'uralsk'
+    city: SiteModel = SiteModel.URALSK
+    name: str = 'uralsk'
     __base_url = 'https://24.kz'
     __news_url = __base_url + '/ru/news/social/itemlist/tag/%D0%A3%D1%80%D0%B0%D0%BB%D1%8C%D1%81%D0%BA'
     referer = 'https://24.kz/ru/news/social/itemlist/tag/%D0%A3%D1%80%D0%B0%D0%BB%D1%8C%D1%81%D0%BA'

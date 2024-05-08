@@ -9,8 +9,7 @@ from datetime import datetime, timezone
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
-from utils.models import Post
-
+from utils.models import Post, SiteModel
 
 headers = {
     'AMP-Same-Origin': 'true',
@@ -32,7 +31,8 @@ headers = {
 
 @dataclass
 class BelgorodParser(BaseParser, BaseRequest):
-    name = 'belgorod'
+    city: SiteModel = SiteModel.BELGOROD
+    name: str = 'belgorod'
     __base_url = 'https://ria.ru'
     __news_url = __base_url + '/amp/location_Belgorod/more.json'
     referer = 'https://ria.ru/amp/location_Belgorod/'

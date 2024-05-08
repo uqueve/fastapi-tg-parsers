@@ -8,8 +8,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
-from utils.models import Post
-
+from utils.models import Post, SiteModel
 
 headers = {
     'AMP-Same-Origin': 'true',
@@ -31,6 +30,7 @@ headers = {
 
 @dataclass
 class VladivostokParser(BaseParser, BaseRequest):
+    city: SiteModel = SiteModel.VLADIVOSTOK
     name: str = 'tumen'
     __base_url: str = 'https://ria.ru'
     __news_url: str = 'https://ria.ru/amp/location_Vladivostok/more.json'

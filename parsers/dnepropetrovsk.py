@@ -17,7 +17,7 @@ headers = {
     'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,ja;q=0.6',
     'Connection': 'keep-alive',
     'DNT': '1',
-    'Referer': 'https://ria.ru/amp/location_Tallinn/',
+    'Referer': 'https://ria.ru/amp/location_Dnipropetrovsk_Oblast/',
     'Sec-Fetch-Dest': 'empty',
     'Sec-Fetch-Mode': 'cors',
     'Sec-Fetch-Site': 'same-origin',
@@ -30,12 +30,12 @@ headers = {
 
 
 @dataclass
-class TallinTallinParser(BaseParser, BaseRequest):
-    city: SiteModel = SiteModel.TALLIN
-    name: str = 'tallin'
+class DnepropetrovskParser(BaseParser, BaseRequest):
+    city: SiteModel = SiteModel.DNEPROPETROVSK
+    name: str = 'dnepropetrovsk'
     __base_url = 'https://ria.ru'
-    __news_url = __base_url + '/amp/location_Tallinn/more.json'
-    referer = 'https://ria.ru/amp/location_Tallinn/'
+    __news_url = __base_url + '/amp/location_Dnipropetrovsk_Oblast/more.json'
+    referer = 'https://ria.ru/amp/location_Dnipropetrovsk_Oblast/'
 
     async def get_news(self, urls, max_news: int | None = None) -> list[Post]:
         if max_news:
@@ -81,7 +81,6 @@ class TallinTallinParser(BaseParser, BaseRequest):
         photo_div = photo_div.find('div', class_='photoview__open')
         data = [json.loads(script.text) for script in photo_div.find_all('script', type='application/ld+json')]
 
-        # TODO: WEBP > JPG ?
         if data:
             photo = data[-1]['url']
             image_urls.append(photo)
@@ -89,7 +88,7 @@ class TallinTallinParser(BaseParser, BaseRequest):
 
 
 async def test():
-    parser = TallinTallinParser()
+    parser = DnepropetrovskParser()
     urls = await parser.find_news_urls()
     # print(urls)
     print(await parser.get_news(urls))

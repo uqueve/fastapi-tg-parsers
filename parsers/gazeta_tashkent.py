@@ -6,12 +6,13 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
-from utils.models import Post
+from utils.models import Post, SiteModel
 
 
 @dataclass
 class TashkentParser(BaseParser, BaseRequest):
-    name = 'tashkent'
+    city: SiteModel = SiteModel.TASHKENT
+    name: str = 'tashkent'
     __base_url = 'https://www.gazeta.uz/'
     __news_url = __base_url + 'ru/'
     referer = 'https://www.gazeta.uz/ru/'

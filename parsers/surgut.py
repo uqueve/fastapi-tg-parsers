@@ -7,11 +7,12 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
-from utils.models import Post
+from utils.models import Post, SiteModel
 
 
 @dataclass
 class SurgutParser(BaseParser, BaseRequest):
+    city: SiteModel = SiteModel.SURGUT
     name: str = 'surgut'
     __base_url: str = 'https://sitv.ru'
     __news_url: str = 'https://sitv.ru/arhiv/news/'
