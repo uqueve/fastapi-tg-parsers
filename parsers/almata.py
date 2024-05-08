@@ -1,14 +1,10 @@
 import asyncio
-import pprint
 import random
 import re
 from dataclasses import dataclass
 
-import dateparser
-from dateutil import parser
 from bs4 import BeautifulSoup
 
-from datetime import datetime, timezone
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest

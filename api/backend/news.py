@@ -1,12 +1,14 @@
+import logging
 from typing import Annotated
 
 from fastapi import APIRouter, status, Depends, HTTPException, Query, Path
 
-from api.backend.controllers import *
+from api.backend.controllers import get_unread_news, get_news_by_oid, set_news_read
 from utils.exceptions.api import ApplicationException
-from utils.models import News, PostOut, ErrorSchema, CitySchema
+from utils.models import News, PostOut, ErrorSchema
 from api.backend.auth import check_api_key
 
+logger = logging.getLogger(__name__)
 news_router = APIRouter(tags=['News'])
 
 

@@ -1,6 +1,6 @@
 import asyncio
 import random
-from dataclasses import field, dataclass
+from dataclasses import dataclass
 
 from bs4 import BeautifulSoup
 

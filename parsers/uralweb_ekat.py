@@ -2,8 +2,6 @@ import asyncio
 import random
 from dataclasses import dataclass
 
-from bs4 import BeautifulSoup
-
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
 from utils.models import Post, SiteModel
@@ -59,16 +57,6 @@ class UralwebEkatParser(BaseParser, BaseRequest):
             url = 'https://www.uralweb.ru' + url_raw
             urls.append(url)
         return urls
-
-    async def get_new_news(self, last_news_date=None, max_news=10) -> [Post]:
-        response = await self._make_async_request(self.__news_url, headers=headers)
-        posts = []
-
-        if not response:
-            print(f"Ошибка запроса {__name__}")
-            return []
-
-        soup = BeautifulSoup(response, 'lxml')
 
     def find_title(self, soup) -> str | None:
         title_ = soup.find('h1')

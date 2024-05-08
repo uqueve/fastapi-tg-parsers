@@ -1,8 +1,7 @@
-from pymongo.collection import Collection
 from pymongo.database import Database
 
 from config_data.config import get_settings, Settings
-from database.mongo.connection import get_mongo_collection, get_mongo_database
+from database.mongo.connection import get_mongo_database
 from database.mongo.repository import NewsRepository
 
 settings: Settings = get_settings()

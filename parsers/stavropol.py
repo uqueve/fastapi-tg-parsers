@@ -1,9 +1,7 @@
 import asyncio
 import random
-import re
 from dataclasses import dataclass
 
-from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
@@ -55,7 +53,6 @@ class StavropolParser(BaseParser, BaseRequest):
         urls = []
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers)
-        main_div = soup.find('table', class_='news_render_lenta')
         items = soup.find_all('td', class_='news_render_lenta_header')
         for item in items:
             url_raw = item.find_next('a')

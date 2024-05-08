@@ -6,7 +6,7 @@ from uuid import uuid4
 from pydantic import BaseModel, Field
 from enum import StrEnum, auto, unique
 
-from utils.exceptions.post import *
+from utils.exceptions.post import PostNoBodyError, PostNoTitleError
 from utils.openai_service import OpenAIService
 from utils.text_sevice import to_chunks
 
@@ -170,7 +170,7 @@ class CustomMediaChunks:
                 try:
                     self.media.append(dict(type='photo', media=post.get_link(i)))
                     self.media[0]['caption'] = post.get_text()
-                except Exception as e:
+                except Exception:
                     pass
 
     def get_media(self):

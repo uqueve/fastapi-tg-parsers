@@ -1,11 +1,8 @@
 import asyncio
 import json
-import pprint
 import random
 from dataclasses import dataclass
 
-from bs4 import BeautifulSoup
-from datetime import datetime, timezone
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
@@ -71,7 +68,7 @@ class TbilisiParser(BaseParser, BaseRequest):
         for p in divs:
             try:
                 content += p.text.replace('\xa0', ' ').strip() + '\n'
-            except AttributeError as ex:
+            except AttributeError:
                 continue
         return content
 

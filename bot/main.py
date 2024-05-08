@@ -1,12 +1,10 @@
-import asyncio
 import json
 import logging
-import pprint
 
 import aiohttp
 
 from database.mongo import settings
-from utils.exceptions.telegram import *
+from utils.exceptions.telegram import TelegramSendMessageError, TelegramSendPhotoError, TelegramSendMediaGroupError
 from utils.models import CustomMediaChunks
 from utils.models import Post
 from utils.text_sevice import chunks_to_text, correct_caption_len

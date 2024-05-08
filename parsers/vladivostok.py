@@ -1,10 +1,8 @@
 import asyncio
 import json
 import random
-from dataclasses import field, dataclass
-from datetime import datetime
+from dataclasses import dataclass
 
-from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
@@ -70,7 +68,7 @@ class VladivostokParser(BaseParser, BaseRequest):
         for p in divs:
             try:
                 content += p.text.replace('\xa0', ' ').strip() + '\n'
-            except AttributeError as ex:
+            except AttributeError:
                 continue
         return content
 

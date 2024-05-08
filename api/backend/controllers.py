@@ -1,9 +1,8 @@
 import logging
 
-from bson import ObjectId
 
 from database.mongo import mongo
-from utils.models import Post, PostOut, CitySchema, SiteModel
+from utils.models import Post, PostOut
 
 logger = logging.getLogger(__name__)
 

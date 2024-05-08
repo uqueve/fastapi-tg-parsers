@@ -2,7 +2,7 @@ import logging
 from typing import Any
 from collections import OrderedDict
 import aiohttp
-from aiohttp import ClientTimeout, ClientResponse
+from aiohttp import ClientTimeout
 from bs4 import BeautifulSoup
 
 
@@ -70,7 +70,7 @@ class BaseRequest:
             logger.warning(f'Попытки закончились, не могу подключиться. Парсер: {self.name}. URL={url}\nЗаголовки: {headers}')
             return None
 
-        except Exception as e:
+        except Exception:
             logger.exception(f'Ошибка запроса {self.name}\t{url}')
             if self.proxies:
                 return await self.__make_async_request_with_proxies(url=url)
@@ -128,7 +128,7 @@ class BaseRequest:
                     if json:
                         return await response.json()
                     return await response.text()
-            except Exception as ee:
+            except Exception:
                 logger.exception(f'Ошибка запроса с прокси {self.name}\t{url}')
                 continue
         return None

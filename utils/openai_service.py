@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-import aiohttp
 import openai
-import requests
-from aiohttp import ClientTimeout
-from openai import OpenAI
 
 from config_data.config import get_settings
 

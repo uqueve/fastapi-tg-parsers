@@ -1,7 +1,6 @@
-from bson import ObjectId
 from pymongo.database import Database
 
-from utils.models import Post, SiteModel, CitySchema
+from utils.models import Post
 
 
 class NewsRepository:

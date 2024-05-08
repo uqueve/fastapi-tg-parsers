@@ -2,8 +2,6 @@ import asyncio
 import random
 from dataclasses import dataclass
 
-from bs4 import BeautifulSoup
-from datetime import datetime, timezone
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
