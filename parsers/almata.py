@@ -1,10 +1,10 @@
 import asyncio
+import contextlib
 import random
 import re
 from dataclasses import dataclass
 
 from bs4 import BeautifulSoup
-
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
@@ -22,7 +22,7 @@ headers = {
     'sec-fetch-mode': 'cors',
     'sec-fetch-site': 'same-origin',
     'sec-gpc': '1',
-    'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+    'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) ' 'Chrome/123.0.0.0 Safari/537.36',
 }
 
 
@@ -41,21 +41,24 @@ class AlmataParser(BaseParser, BaseRequest):
         for url in urls:
             if len(news) >= self.max_news:
                 return news
-            json_url = (f'https://www.inalmaty.kz/api3/news/{url}'
-                        f'?expand=url,title,friendlyPublishDate,sourceReliability,label,isCommercial,isAgeLimited,'
-                        f'isIndexingForbidden,commentsCount,keywordsWithLinks,internalPoster,parsedContent,ratingsInfo,'
-                        f'allowShowCommentsList,allowComment,actualSpecialThemes,author.realName,author.publicName,'
-                        f'author.publicPost,author.authorUrl,author.avatarUrl,poll.question,poll.url,poll.votesCount,'
-                        f'poll.userVote,poll.canUserVote,poll.isActive,poll.answers.answer,poll.answers.votesCount,'
-                        f'commentsPreview.userName,commentsPreview.isAnonymous,commentsPreview.isModerated,'
-                        f'commentsPreview.likesCount,commentsPreview.dislikesCount,commentsPreview.content,'
-                        f'commentsPreview.friendlyPublishDate,commentsPreview.avatarUrl,commentsPreview.isUserLiked,'
-                        f'commentsPreview.isUserDisliked,publishedI18nData.slug')
+            json_url = (
+                f'https://www.inalmaty.kz/api3/news/{url}'
+                f'?expand=url,title,friendlyPublishDate,sourceReliability,label,isCommercial,isAgeLimited,'
+                f'isIndexingForbidden,commentsCount,keywordsWithLinks,internalPoster,parsedContent,ratingsInfo,'
+                f'allowShowCommentsList,allowComment,actualSpecialThemes,author.realName,author.publicName,'
+                f'author.publicPost,author.authorUrl,author.avatarUrl,poll.question,poll.url,poll.votesCount,'
+                f'poll.userVote,poll.canUserVote,poll.isActive,poll.answers.answer,poll.answers.votesCount,'
+                f'commentsPreview.userName,commentsPreview.isAnonymous,commentsPreview.isModerated,'
+                f'commentsPreview.likesCount,commentsPreview.dislikesCount,commentsPreview.content,'
+                f'commentsPreview.friendlyPublishDate,commentsPreview.avatarUrl,commentsPreview.isUserLiked,'
+                f'commentsPreview.isUserDisliked,publishedI18nData.slug'
+            )
             soup = await self.get_json(
                 url=json_url,
                 json=True,
                 headers=headers,
-                referer=self.referer)
+                referer=self.referer,
+            )
             new = self.get_new(
                 soup,
                 url=json_url,
@@ -71,13 +74,20 @@ class AlmataParser(BaseParser, BaseRequest):
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers)
         main_articles = soup.find('div', class_='col-12 col-md-8 col-lg-9')
-        articles_block = main_articles.find_all('a', class_='c-news-block__title', limit=max_news // 2)
-        articles_title = main_articles.find_all('a', class_='c-news-card__title', limit=max_news // 2)
-        urls = []
+        articles_block = main_articles.find_all(
+            'a',
+            class_='c-news-block__title',
+            limit=max_news // 2,
+        )
+        articles_title = main_articles.find_all(
+            'a',
+            class_='c-news-card__title',
+            limit=max_news // 2,
+        )
         for article in articles_block:
             try:
                 link_raw = article.get('href')
-                found_link_patterns = re.findall(r"\d+", link_raw)
+                found_link_patterns = re.findall(r'\d+', link_raw)
                 if found_link_patterns:
                     link = found_link_patterns[0]
                     urls.append(link)
@@ -88,7 +98,7 @@ class AlmataParser(BaseParser, BaseRequest):
         for article in articles_title:
             try:
                 link_raw = article.get('href')
-                found_link_patterns = re.findall(r"\d+", link_raw)
+                found_link_patterns = re.findall(r'\d+', link_raw)
                 if found_link_patterns:
                     link = found_link_patterns[0]
                     urls.append(link)
@@ -97,64 +107,10 @@ class AlmataParser(BaseParser, BaseRequest):
                 continue
         return urls
 
-    async def get_new_news(self, last_news_date=None, max_news=6) -> [Post]:
-        response = await self._make_async_request(self.__news_url)
-        posts = []
-
-        if not response:
-            print(f"Ошибка запроса {__name__}")
-            return []
-
-        soup = BeautifulSoup(response, 'lxml')
-        main_articles = soup.find('div', class_='col-12 col-md-8 col-lg-9')
-        articles_block = main_articles.find_all('a', class_='c-news-block__title', limit=max_news // 2)
-        articles_title = main_articles.find_all('a', class_='c-news-card__title', limit=max_news // 2)
-        urls = []
-        for article in articles_block:
-            try:
-                link_raw = article.get('href')
-                found_link_patterns = re.findall(r"\d+", link_raw)
-                if found_link_patterns:
-                    link = found_link_patterns[0]
-                    urls.append(link)
-            except Exception as ex:
-                print(ex)
-                continue
-
-        for article in articles_title:
-            try:
-                link_raw = article.get('href')
-                found_link_patterns = re.findall(r"\d+", link_raw)
-                if found_link_patterns:
-                    link = found_link_patterns[0]
-                    urls.append(link)
-            except Exception as ex:
-                print(ex)
-                continue
-
-        for url in urls:
-            try:
-                post = await self.get_new(url)
-                await asyncio.sleep(random.choice(range(5)))
-            except Exception as ex:
-                print(ex)
-                continue
-
-            if post is None:
-                continue
-
-            posts.append(post)
-
-            if len(posts) >= max_news:
-                break
-        return posts
-
     def find_photos(self, json_resp) -> list[str]:
         image_urls = []
-        try:
+        with contextlib.suppress(KeyError):
             image_urls.append(json_resp['internalPoster']['url'])
-        except KeyError:
-            pass
         parsed_content = json_resp['parsedContent']
         for content in parsed_content:
             if not content.get('type'):
@@ -177,12 +133,11 @@ class AlmataParser(BaseParser, BaseRequest):
                 continue
             if not content.get('content'):
                 continue
-            cleantext = BeautifulSoup(content['content'], "lxml").text
+            cleantext = BeautifulSoup(content['content'], 'lxml').text
             body += cleantext.replace('\xa0', ' ').strip() + '\n'
         return body
 
     def find_title(self, json_resp) -> str:
-        # link = json_resp['url']
         title = json_resp['title']
         return title
 

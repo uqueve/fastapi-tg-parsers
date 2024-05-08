@@ -42,10 +42,14 @@ class SorochinskParser(BaseParser, BaseRequest):
         return urls
 
     def find_title(self, soup: BeautifulSoup) -> str:
-        title = (soup.find('h1', class_=lambda value: find_value(value, 'main-new-title text'))
-                 .text
-                 .replace('\xa0', ' ')
-                 .strip())
+        title = (
+            soup.find(
+                'h1',
+                class_=lambda value: find_value(value, 'main-new-title text'),
+            )
+            .text.replace('\xa0', ' ')
+            .strip()
+        )
         return title
 
     def find_body(self, soup: BeautifulSoup) -> str:

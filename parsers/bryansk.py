@@ -35,7 +35,10 @@ class BryanskParser(BaseParser, BaseRequest):
         urls = []
         url = self.__news_url
         soup = await self.get_soup(url=url)
-        items = soup.find_all('div', class_=lambda value: find_value(value, 'big-news-list-item big-news-list-'))
+        items = soup.find_all(
+            'div',
+            class_=lambda value: find_value(value, 'big-news-list-item big-news-list-'),
+        )
         for item in items:
             url_raw = item.find_next('h2').find('a')
             if not url_raw:

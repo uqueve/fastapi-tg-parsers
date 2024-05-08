@@ -17,5 +17,5 @@ def prepare_database():
                     'name': str(city['city']),
                     'tg_id': int(city['channel_tg_id']),
                     'ru': city['ru'],
-                }
+                },
             )

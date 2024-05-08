@@ -9,7 +9,8 @@ from parsers.models.request import BaseRequest
 from utils.models import Post, SiteModel
 
 headers = {
-    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,'
+    'application/signed-exchange;v=b3;q=0.7',
     'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,ja;q=0.6',
     'cache-control': 'max-age=0',
     'dnt': '1',
@@ -23,7 +24,7 @@ headers = {
     'sec-fetch-user': '?1',
     'sec-gpc': '1',
     'upgrade-insecure-requests': '1',
-    'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) ' 'Chrome/124.0.0.0 Safari/537.36',
 }
 
 
@@ -75,7 +76,10 @@ class ArhangelskParser(BaseParser, BaseRequest):
 
     def find_body(self, soup: BeautifulSoup) -> str | None:
         body = ''
-        divs = soup.find_all('div', class_='uiArticleBlockText_i9h2o text-style-body-1 c-text block_fefJj')
+        divs = soup.find_all(
+            'div',
+            class_='uiArticleBlockText_i9h2o text-style-body-1 c-text block_fefJj',
+        )
         for div in divs:
             p = div.find('p')
             if not p:

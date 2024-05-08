@@ -2,7 +2,6 @@ import asyncio
 import random
 from dataclasses import dataclass
 
-
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
 from utils.models import Post, SiteModel
@@ -52,7 +51,10 @@ class UlanUdeParser(BaseParser, BaseRequest):
         urls = []
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers)
-        news = soup.find_all('div', class_=lambda value: value.startswith('news-item news-item') if value else False)
+        news = soup.find_all(
+            'div',
+            class_=lambda value: value.startswith('news-item news-item') if value else False,
+        )
         # second way to find tags, a more simple to understand
         # news = soup.find_all('div', class_=lambda value: find_value(value))
 
@@ -69,7 +71,7 @@ class UlanUdeParser(BaseParser, BaseRequest):
         return title
 
     def find_body(self, soup) -> str | None:
-        content = ""
+        content = ''
         main_block = soup.find('article', class_='news-detail')
         content_div = main_block.find('div', class_='news-text')
 

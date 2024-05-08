@@ -12,7 +12,6 @@ class PostValidateException(Exception):
 
 @dataclass
 class PostNoTitleError(PostValidateException):
-
     @property
     def message(self):
         return f'Нет заголовка в новости. URL: {self.link}'
@@ -20,8 +19,6 @@ class PostNoTitleError(PostValidateException):
 
 @dataclass
 class PostNoBodyError(PostValidateException):
-
     @property
     def message(self):
         return f'Нет тела новости. URL: {self.link}'
-    

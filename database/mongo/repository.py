@@ -44,7 +44,10 @@ class NewsRepository:
 
     def get_one_not_sent_news(self, city) -> Post | None:
         collection = self.connection['news']
-        _post = collection.find_one(filter={'city.name': str(city), 'posted': False}, sort=[('date', -1)])
+        _post = collection.find_one(
+            filter={'city.name': str(city), 'posted': False},
+            sort=[('date', -1)],
+        )
         if _post:
             return Post(**_post)
         else:
@@ -54,27 +57,29 @@ class NewsRepository:
         collection = self.connection['news']
         collection.update_one(
             filter={'oid': news_id},
-            update={'$set': {'posted': True}})
+            update={'$set': {'posted': True}},
+        )
 
     def update_news_set_read(self, news_ids_list: list):
         collection = self.connection['news']
         collection.update_many(
-            filter={"oid": {"$in": news_ids_list}},
-            update={'$set': {"sent": True}})
+            filter={'oid': {'$in': news_ids_list}},
+            update={'$set': {'sent': True}},
+        )
 
     def update_news_body_ai(self, body, news_id):
         collection = self.connection['news']
-        collection.update_one(filter={"oid": news_id}, update={'$set': {"body": body}})
+        collection.update_one(filter={'oid': news_id}, update={'$set': {'body': body}})
 
     def get_unread_news(self, city: str | None, limit: int, offset: int):
         collection = self.connection['news']
         if not city:
-            return collection.find(filter={"sent": False, "posted": True}).sort("date", -1).skip(offset).limit(limit)
-        return collection.find(filter={"city.ru": city, "posted": True}).sort("date", -1).skip(offset).limit(limit)
+            return collection.find(filter={'sent': False, 'posted': True}).sort('date', -1).skip(offset).limit(limit)
+        return collection.find(filter={'city.ru': city, 'posted': True}).sort('date', -1).skip(offset).limit(limit)
 
     def get_news_by_oid(self, oid: str):
         collection = self.connection['news']
-        return collection.find_one(filter={"oid": oid, "posted": True})
+        return collection.find_one(filter={'oid': oid, 'posted': True})
 
     def _get_one_news(self):
         collection = self.connection['news']

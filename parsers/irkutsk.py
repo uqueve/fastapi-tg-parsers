@@ -54,7 +54,11 @@ class IrkutskParser(BaseParser, BaseRequest):
         urls = []
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers)
-        items = soup.find_all('li', class_=lambda v: find_value(v, 'b-news-article-list-item'), limit=15)
+        items = soup.find_all(
+            'li',
+            class_=lambda v: find_value(v, 'b-news-article-list-item'),
+            limit=15,
+        )
         for item in items:
             url_raw = item.find('a')
             if not url_raw:
@@ -72,7 +76,10 @@ class IrkutskParser(BaseParser, BaseRequest):
 
     def find_body(self, soup: BeautifulSoup) -> str | None:
         body = ''
-        content = soup.find('div', class_='lenta-article__text j-material-text j-copyright-insert')
+        content = soup.find(
+            'div',
+            class_='lenta-article__text j-material-text j-copyright-insert',
+        )
         if not content:
             return None
         ps = content.find_all('p')

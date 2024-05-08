@@ -2,7 +2,6 @@ import asyncio
 import random
 from dataclasses import dataclass
 
-
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
 from utils.models import Post, SiteModel
@@ -53,7 +52,10 @@ class VladimirParser(BaseParser, BaseRequest):
         urls = []
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers)
-        news = soup.find_all('article', class_=lambda value: find_value(value, 'news-line_news__'))
+        news = soup.find_all(
+            'article',
+            class_=lambda value: find_value(value, 'news-line_news__'),
+        )
 
         for new in news:
             url = new.find('a')
@@ -65,16 +67,16 @@ class VladimirParser(BaseParser, BaseRequest):
     def find_title(self, soup) -> str | None:
         title = soup.find('h1', attrs={'itemprop': 'headline'})
         if not title:
-            return
+            return None
         title = title.text.strip()
         return title
 
     def find_body(self, soup) -> str | None:
-        content = ""
+        content = ''
 
         main_block = soup.find('div', attrs={'itemprop': 'articleBody'})
         if not main_block:
-            return
+            return None
         contents = main_block.find_all('p')
         for con in contents:
             if not con:
@@ -86,7 +88,10 @@ class VladimirParser(BaseParser, BaseRequest):
 
     def find_photos(self, soup) -> list[str] | list:
         image_urls = []
-        image_raw = soup.find('img', class_=lambda value: find_value(value, 'article-body_articleBodyImg'))
+        image_raw = soup.find(
+            'img',
+            class_=lambda value: find_value(value, 'article-body_articleBodyImg'),
+        )
 
         if image_raw:
             photo = self.__base_url + image_raw.get('src')

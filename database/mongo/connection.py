@@ -9,7 +9,8 @@ def get_mongo_database(settings: Settings) -> Database:
     # mongo_client = pymongo.MongoClient(
     #     f"mongodb://{settings.DB_USER}:{settings.DB_PASS}@{settings.DB_HOST}:{settings.DB_PORT}")
     mongo_client = pymongo.MongoClient(
-        f"mongodb://{settings.DB_USER}:{settings.DB_PASS}@{settings.DB_HOST}:{settings.DB_PORT}")
+        f'mongodb://{settings.DB_USER}:{settings.DB_PASS}@{settings.DB_HOST}:{settings.DB_PORT}',
+    )
     database: Database = mongo_client[settings.DB_NAME]
     return database
 

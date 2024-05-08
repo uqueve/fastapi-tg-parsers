@@ -2,7 +2,6 @@ import asyncio
 import random
 from dataclasses import dataclass
 
-
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
 from utils.models import Post, SiteModel
@@ -71,7 +70,7 @@ class ChitaParser(BaseParser, BaseRequest):
         return title
 
     def find_body(self, soup) -> str | None:
-        content = ""
+        content = ''
 
         main_block = soup.find('main', class_='article')
         contents_div = main_block.find('div', class_='article__body')

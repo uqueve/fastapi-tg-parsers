@@ -1,6 +1,7 @@
 import asyncio
 import random
 from dataclasses import dataclass
+
 from bs4 import ResultSet, Tag
 
 from parsers.models.base import BaseParser
@@ -66,12 +67,12 @@ class KaliningradParser(BaseParser, BaseRequest):
     def find_title(self, soup) -> str | None:
         title = soup.find('h1', class_='itemTitle')
         if not title:
-            return
+            return None
         title = title.text.strip()
         return title
 
     def find_body(self, soup) -> str | None:
-        content = ""
+        content = ''
 
         main_block = soup.find('div', class_='itemFullText')
         contents = main_block.find_all('p')
@@ -87,10 +88,9 @@ class KaliningradParser(BaseParser, BaseRequest):
         image_urls = []
         # print(soup)
         main_photo = soup.find('div', class_='itemImage')
-        if main_photo:
-            if img_raw := main_photo.find('img'):
-                photo = self.__base_url + img_raw.get('src')
-                image_urls.append(photo)
+        if main_photo and (img_raw := main_photo.find('img')):
+            photo = self.__base_url + img_raw.get('src')
+            image_urls.append(photo)
 
         images_raw: ResultSet[Tag] = soup.find_all('a', class_='rsImg')
         if images_raw:

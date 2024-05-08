@@ -2,7 +2,6 @@ import asyncio
 import random
 from dataclasses import dataclass
 
-
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
 from utils.models import Post, SiteModel
@@ -53,7 +52,11 @@ class CherepovecParser(BaseParser, BaseRequest):
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers)
         main_articles = soup.find('div', class_='container content wrapper')
-        articles_block = main_articles.find_all('a', class_='lenta-title', limit=self.max_news)
+        articles_block = main_articles.find_all(
+            'a',
+            class_='lenta-title',
+            limit=self.max_news,
+        )
 
         for article in articles_block:
             try:
@@ -65,33 +68,41 @@ class CherepovecParser(BaseParser, BaseRequest):
         return urls
 
     def find_title(self, soup) -> str | None:
-        main_block = soup.find('div', class_='col-lg-9 col-md-9 col-sm-12 col-xs-12 sticky-main print-wide ny-2023')
+        main_block = soup.find(
+            'div',
+            class_='col-lg-9 col-md-9 col-sm-12 col-xs-12 sticky-main print-wide ny-2023',
+        )
         if not main_block:
-            return
+            return None
         title = main_block.find('h1', class_='margin-bottom-small').text.replace('\xa0', ' ').strip()
         return title
 
     def find_body(self, soup) -> str | None:
-        content = ""
-        main_block = soup.find('div', class_='col-lg-9 col-md-9 col-sm-12 col-xs-12 sticky-main print-wide ny-2023')
+        content = ''
+        main_block = soup.find(
+            'div',
+            class_='col-lg-9 col-md-9 col-sm-12 col-xs-12 sticky-main print-wide ny-2023',
+        )
         contents_div = main_block.find('div', class_='js-mediator-article article-text')
         contents = contents_div.find_all('p')
         for con in contents:
             content += con.text.replace('\xa0', ' ').strip() + '\n'
         if 'Erid' in content:
-            return
+            return None
         return content
 
     def find_photos(self, soup) -> list[str] | list:
         image_urls = set()
-        main_block = soup.find('div', class_='col-lg-9 col-md-9 col-sm-12 col-xs-12 sticky-main print-wide ny-2023')
+        main_block = soup.find(
+            'div',
+            class_='col-lg-9 col-md-9 col-sm-12 col-xs-12 sticky-main print-wide ny-2023',
+        )
         contents_div = main_block.find('div', class_='js-mediator-article article-text')
         contents = contents_div.find_all('p')
         for con in contents:
             photo = con.find('img')
-            if photo:
-                if photo := photo.get('src'):
-                    image_urls.add(photo)
+            if photo and (photo := photo.get('src')):
+                image_urls.add(photo)
 
         photo_div = main_block.find('div', class_='widget print-hidden')
 

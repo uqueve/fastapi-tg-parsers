@@ -2,7 +2,6 @@ import asyncio
 import random
 from dataclasses import dataclass
 
-
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
 from utils.models import Post, SiteModel
@@ -37,7 +36,6 @@ class TashkentParser(BaseParser, BaseRequest):
         soup = await self.get_soup(url=url)
         articles_block = soup.find('div', class_='newsblock-2')
         articles = articles_block.find_all('div', class_='nblock', limit=10)
-        urls = []
 
         for article in articles:
             link = 'https://www.gazeta.uz' + article.find_next('a').get('href')
@@ -49,7 +47,7 @@ class TashkentParser(BaseParser, BaseRequest):
         return title
 
     def find_body(self, soup) -> str | None:
-        content = ""
+        content = ''
 
         main_div = soup.find('div', attrs={'itemprop': 'articleBody'})
         ps = main_div.find_all('p')

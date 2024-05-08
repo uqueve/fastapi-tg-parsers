@@ -2,13 +2,13 @@ import asyncio
 import random
 from dataclasses import dataclass
 
-
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
 from utils.models import Post, SiteModel
 
 headers = {
-    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,'
+    'application/signed-exchange;v=b3;q=0.7',
     'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,ja;q=0.6',
     'cache-control': 'max-age=0',
     'dnt': '1',
@@ -67,7 +67,7 @@ class NovokuznetskParser(BaseParser, BaseRequest):
         return title
 
     def find_body(self, soup) -> str | None:
-        content = ""
+        content = ''
         main_block = soup.find('div', class_='text-2sm')
         contents = main_block.find_all('p')
         for con in contents:

@@ -1,10 +1,9 @@
 import datetime as dt
-from typing import List
 from dataclasses import dataclass
+from enum import StrEnum, auto, unique
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
-from enum import StrEnum, auto, unique
 
 from utils.exceptions.post import PostNoBodyError, PostNoTitleError
 from utils.openai_service import OpenAIService
@@ -85,7 +84,7 @@ class Post(BaseModel):
     oid: str | None = Field(default_factory=uuid4)
     title: str | None = Field(default='')
     body: str | None = Field(default='')
-    image_links: List[str] | None = Field(default_factory=list)
+    image_links: list[str] | None = Field(default_factory=list)
     date: dt.datetime | None = Field(default_factory=dt.datetime.now)
     link: str | None = Field(default=None)
     city: CitySchema | None = Field(default=None)
@@ -136,7 +135,7 @@ class PostOut(BaseModel):
     oid: str = Field(alias='oid')
     title: str | None = Field(default='')
     body: str | None = Field(default='')
-    image_links: List[str] | None = Field(default=[])
+    image_links: list[str] | None = Field(default=[])
     date: str | None = Field(default='')
     link: str | None = Field(default='')
     city: CitySchema = Field(alias='city')
@@ -183,4 +182,4 @@ class CustomMediaChunks:
         if self.post.images_count() > 0:
             return self.post.get_link(0)
         else:
-            return "https://img.freepik.com/free-vector/oops-404-error-with-a-broken-robot-concept-illustration_114360-5529.jpg?w=740&t=st=1708030076~exp=1708030676~hmac=869cd3aa77fc267417e08a332b3d9771539014d7879bc848221bb191b5d7dc53"
+            return 'https://img.freepik.com/free-vector/oops-404-error-with-a-broken-robot-concept-illustration_114360-5529.jpg?w=740&t=st=1708030076~exp=1708030676~hmac=869cd3aa77fc267417e08a332b3d9771539014d7879bc848221bb191b5d7dc53'

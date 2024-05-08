@@ -2,7 +2,6 @@ import asyncio
 import random
 from dataclasses import dataclass
 
-
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
 from utils.models import Post, SiteModel
@@ -43,13 +42,12 @@ class ReportBakuParser(BaseParser, BaseRequest):
         return urls
 
     def find_title(self, soup) -> str | None:
-
         title = soup.find('h1', class_='news-title').text.replace('\xa0', ' ').strip()
 
         return title
 
     def find_body(self, soup) -> str | None:
-        content = ""
+        content = ''
         main_div = soup.find('div', class_='editor-body')
         if main_div:
             ps = main_div.find_all('p')

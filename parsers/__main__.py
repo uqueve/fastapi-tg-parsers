@@ -1,18 +1,17 @@
 import asyncio
 import inspect
-
-import parsers
 import logging
 from copy import copy
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+import parsers
 from bot.main import send_news
 from database.mongo import mongo
 from parsers.models.base import BaseParser
 from utils.exceptions.post import PostValidateException
 from utils.exceptions.telegram import TelegramSendException
-from utils.models import SiteModel, Post, CitySchema
+from utils.models import CitySchema, Post, SiteModel
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +25,10 @@ async def start_parsers():
 
 async def parse_news():
     n = 0
-    for _parser_class_str, parser_class in inspect.getmembers(parsers, predicate=inspect.isclass):
+    for _parser_class_str, parser_class in inspect.getmembers(
+        parsers,
+        predicate=inspect.isclass,
+    ):
         try:
             parser_instance: BaseParser = parser_class()
 
@@ -40,13 +42,15 @@ async def parse_news():
                     final_urls.remove(url)
 
             if not final_urls:
-                logger.warning(f'Нет новостей в городе {str(parser_instance.city)}')
+                logger.warning(f'Нет новостей в городе {parser_instance.city!s}')
                 continue
 
-            news_posts: list[Post] = await parser_instance.get_news(final_urls, max_news=3)
+            news_posts: list[Post] = await parser_instance.get_news(
+                final_urls,
+                max_news=3,
+            )
 
             for post in news_posts:
-
                 if mongo.is_news_exists_by_title(title=post.title) is True:
                     continue
 
@@ -55,7 +59,7 @@ async def parse_news():
                 post.city = CitySchema(
                     oid=city_data.get('oid'),
                     name=city_data.get('name'),
-                    ru=city_data.get('ru')
+                    ru=city_data.get('ru'),
                 )
                 try:
                     post.post_validate()
@@ -77,12 +81,16 @@ async def post_news():
             if post := mongo.get_one_not_sent_news(city):
                 channel_tg_id = mongo.get_city_tg_id_by_name(city_name=city)
                 await send_news(post, channel_tg_id, mongo)
-                logging.debug(f'В канал {city} ({channel_tg_id}) отправлена новость: {post.link})')
+                logging.debug(
+                    f'В канал {city} ({channel_tg_id}) отправлена новость: {post.link})',
+                )
                 s += 1
             else:
-                logger.warning(f'Не найдено неотправленных новостей в городе {str(city)}')
+                logger.warning(
+                    f'Не найдено неотправленных новостей в городе {city!s}',
+                )
         except TelegramSendException as error:
-            logging.error(f'{error.message}')
+            logging.exception(f'{error.message}')
         except Exception as e:
             logging.exception(f'Error with sending posts: {e}')
             continue

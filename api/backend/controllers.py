@@ -1,6 +1,5 @@
 import logging
 
-
 from database.mongo import mongo
 from utils.models import Post, PostOut
 
@@ -22,7 +21,7 @@ def get_unread_news(city: str | None, limit: int, offset: int):
                 link=news_obj.link,
                 city=news_obj.city,
                 posted=news_obj.posted,
-                sent=news_obj.sent
+                sent=news_obj.sent,
             )
             news_list.append(post_out)
         except Exception:
@@ -42,7 +41,7 @@ def set_news_read(news_list_read: list):
         return False
 
 
-def get_news_by_oid(news_oid: str):
+def get_news_by_oid(news_oid: str) -> PostOut | None:
     new = mongo.get_news_by_oid(oid=news_oid)
     try:
         news_obj = Post(**new)
@@ -55,7 +54,7 @@ def get_news_by_oid(news_oid: str):
             link=news_obj.link,
             city=news_obj.city,
             posted=news_obj.posted,
-            sent=news_obj.sent
+            sent=news_obj.sent,
         )
     except Exception:
         logger.exception('Problem with dump models when getting unread news')

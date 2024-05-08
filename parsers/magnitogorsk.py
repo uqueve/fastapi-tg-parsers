@@ -2,7 +2,6 @@ import asyncio
 import random
 from dataclasses import dataclass
 
-
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
 from utils.models import Post, SiteModel
@@ -53,7 +52,10 @@ class MagnitogorskParser(BaseParser, BaseRequest):
         urls = []
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers)
-        news = soup.find_all('article', class_=lambda value: find_value(value, 'jeg_post jeg_pl_md_card'))
+        news = soup.find_all(
+            'article',
+            class_=lambda value: find_value(value, 'jeg_post jeg_pl_md_card'),
+        )
 
         for new in news:
             url = new.find('a')
@@ -65,16 +67,19 @@ class MagnitogorskParser(BaseParser, BaseRequest):
     def find_title(self, soup) -> str | None:
         title = soup.find('h1', class_='jeg_post_title')
         if not title:
-            return
+            return None
         title = title.text.strip()
         return title
 
     def find_body(self, soup) -> str | None:
-        content = ""
+        content = ''
 
-        main_block = soup.find('div', class_=lambda value: find_value(value, 'content-inner'))
+        main_block = soup.find(
+            'div',
+            class_=lambda value: find_value(value, 'content-inner'),
+        )
         if not main_block:
-            return
+            return None
         contents = main_block.find_all('p')
         for con in contents:
             if not con:
@@ -97,7 +102,10 @@ class MagnitogorskParser(BaseParser, BaseRequest):
             photo = photo.get('src')
             image_urls.append(photo)
 
-        main_block = soup.find('div', class_=lambda value: find_value(value, 'content-inner'))
+        main_block = soup.find(
+            'div',
+            class_=lambda value: find_value(value, 'content-inner'),
+        )
         if not main_block:
             return image_urls
         images_blocks = main_block.find_all('figure', class_='wp-block-image size-full')

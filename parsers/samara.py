@@ -90,7 +90,10 @@ class SamaraParser(BaseParser, BaseRequest):
             photos.append(main_photo.get('href'))
         content_div = soup.find('div', class_='b-article-body')
         if content_div:
-            photo_divs = content_div.find_all('div', class_=lambda value: find_value(value, 'image-attachment__photo'))
+            photo_divs = content_div.find_all(
+                'div',
+                class_=lambda value: find_value(value, 'image-attachment__photo'),
+            )
             for photo_div in photo_divs:
                 photo = photo_div.find('img')
                 if photo:

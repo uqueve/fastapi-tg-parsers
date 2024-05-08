@@ -2,7 +2,6 @@ import asyncio
 import random
 from dataclasses import dataclass
 
-
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
 from utils.models import Post, SiteModel
@@ -53,7 +52,10 @@ class StepnogorskParser(BaseParser, BaseRequest):
         urls = []
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers)
-        news = soup.find_all('div', class_='zmainCard_item card_md z-col-lg-3 z-col-md-3')
+        news = soup.find_all(
+            'div',
+            class_='zmainCard_item card_md z-col-lg-3 z-col-md-3',
+        )
 
         for new in news:
             url = new.find('a')
@@ -66,16 +68,16 @@ class StepnogorskParser(BaseParser, BaseRequest):
         main_block = soup.find('div', class_='articleBlock')
         title = main_block.find('h1')
         if not title:
-            return
+            return None
         title = title.text.strip()
         return title
 
     def find_body(self, soup) -> str | None:
-        content = ""
+        content = ''
 
         main_block = soup.find('div', class_='articleBlock')
         if not main_block:
-            return
+            return None
         contents = main_block.find_all('p')
         for con in contents:
             if not con:

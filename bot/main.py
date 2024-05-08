@@ -4,11 +4,13 @@ import logging
 import aiohttp
 
 from database.mongo import settings
-from utils.exceptions.telegram import TelegramSendMessageError, TelegramSendPhotoError, TelegramSendMediaGroupError
-from utils.models import CustomMediaChunks
-from utils.models import Post
+from utils.exceptions.telegram import (
+    TelegramSendMediaGroupError,
+    TelegramSendMessageError,
+    TelegramSendPhotoError,
+)
+from utils.models import CustomMediaChunks, Post
 from utils.text_sevice import chunks_to_text, correct_caption_len
-
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +27,6 @@ async def send_news(post: Post, channel_tg_id, mongo):
     chat_id = channel_tg_id
 
     if media is not None:
-
         if len(caption) < 1024:
             print(1)
             media[0]['caption'] = caption
@@ -56,11 +57,7 @@ async def send_news(post: Post, channel_tg_id, mongo):
 
 async def send_message(text: str, channel_id: int, post: Post):
     url = f'https://api.telegram.org/bot{settings.TG_BOT_TOKEN}/sendMessage'
-    data = {
-            'chat_id': channel_id,
-            'text': text,
-            'parse_mode': 'HTML'
-            }
+    data = {'chat_id': channel_id, 'text': text, 'parse_mode': 'HTML'}
     async with aiohttp.request(method='POST', url=url, json=data) as response:
         response = await response.json()
         if not response['ok']:
@@ -70,23 +67,25 @@ async def send_message(text: str, channel_id: int, post: Post):
 async def send_photo(caption: str, photo: str, channel_id: int, post: Post):
     url = f'https://api.telegram.org/bot{settings.TG_BOT_TOKEN}/sendPhoto'
     data = {
-            'chat_id': channel_id,
-            'photo': photo,
-            'caption': caption,
-            'parse_mode': 'HTML'
-            }
+        'chat_id': channel_id,
+        'photo': photo,
+        'caption': caption,
+        'parse_mode': 'HTML',
+    }
     async with aiohttp.request(method='POST', url=url, json=data) as response:
         response = await response.json()
         if not response['ok']:
-            raise TelegramSendPhotoError(post=post, response=response, photo=photo, caption=caption)
+            raise TelegramSendPhotoError(
+                post=post,
+                response=response,
+                photo=photo,
+                caption=caption,
+            )
 
 
 async def send_media_group(media: list[dict], channel_id: int, post: Post):
     url = f'https://api.telegram.org/bot{settings.TG_BOT_TOKEN}/sendMediaGroup'
-    data = {
-            'chat_id': channel_id,
-            'media': json.dumps(media)
-            }
+    data = {'chat_id': channel_id, 'media': json.dumps(media)}
     async with aiohttp.request(method='POST', url=url, json=data) as response:
         response = await response.json()
         if not response['ok']:

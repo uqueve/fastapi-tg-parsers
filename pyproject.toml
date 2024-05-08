@@ -1,0 +1,27 @@
+[project]
+requires-python = ">=3.11"
+
+[tool.ruff]
+exclude = ["myvenv"]
+line-length = 152
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.ruff.lint]
+select = ["ALL"]
+#select = [
+#    # pycodestyle
+#    "E",
+#    # Pyflakes
+#    "F",
+#    # pyupgrade
+#    "UP",
+#    # flake8-bugbear
+#    "B",
+#    # flake8-simplify
+#    "SIM",
+#    # isort
+#    "I",
+#]
+extend-select = ["E501"]

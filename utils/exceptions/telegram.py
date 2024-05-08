@@ -19,8 +19,10 @@ class TelegramSendPhotoError(TelegramSendException):
 
     @property
     def message(self):
-        return (f'Ошибка при отправке фото в канал. Парсер: {self.post.city.ru}\n'
-                f'\nОтвет сервера: {self.response}\nФото для отправки: {self.photo}.Подпись: {self.caption}')
+        return (
+            f'Ошибка при отправке фото в канал. Парсер: {self.post.city.ru}\n'
+            f'\nОтвет сервера: {self.response}\nФото для отправки: {self.photo}.Подпись: {self.caption}'
+        )
 
 
 @dataclass
@@ -31,8 +33,10 @@ class TelegramSendMediaGroupError(TelegramSendException):
 
     @property
     def message(self):
-        return (f'Ошибка при отправке сообщения в канал. Парсер: {self.post.city.ru}\n'
-                f'\nОтвет сервера: {self.response}\nМедиа для отправки: {self.media}')
+        return (
+            f'Ошибка при отправке сообщения в канал. Парсер: {self.post.city.ru}\n'
+            f'\nОтвет сервера: {self.response}\nМедиа для отправки: {self.media}'
+        )
 
 
 @dataclass
@@ -43,5 +47,7 @@ class TelegramSendMessageError(TelegramSendException):
 
     @property
     def message(self):
-        return (f'Ошибка при отправке сообщения в канал. Парсер: {self.post.city.ru}\n'
-                f'\nОтвет сервера: {self.response}\nТекст для отправки: {self.tg_text}')
+        return (
+            f'Ошибка при отправке сообщения в канал. Парсер: {self.post.city.ru}\n'
+            f'\nОтвет сервера: {self.response}\nТекст для отправки: {self.tg_text}'
+        )

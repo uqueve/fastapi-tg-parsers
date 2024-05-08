@@ -9,7 +9,8 @@ from parsers.models.request import BaseRequest
 from utils.models import Post, SiteModel
 
 headers = {
-    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,'
+    'application/signed-exchange;v=b3;q=0.7',
     'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,ja;q=0.6',
     'cache-control': 'max-age=0',
     'dnt': '1',
@@ -54,7 +55,10 @@ class ChelyabinskParser(BaseParser, BaseRequest):
         urls = []
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers)
-        items = soup.find_all('div', class_=lambda value: find_value(value, 'list-item'))
+        items = soup.find_all(
+            'div',
+            class_=lambda value: find_value(value, 'list-item'),
+        )
         for item in items:
             url_raw = item.find_next('a')
             if not url_raw:

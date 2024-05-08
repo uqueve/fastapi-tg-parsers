@@ -2,7 +2,6 @@ import asyncio
 import random
 from dataclasses import dataclass
 
-
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
 from utils.models import Post, SiteModel
@@ -65,12 +64,12 @@ class NarinParser(BaseParser, BaseRequest):
     def find_title(self, soup) -> str | None:
         title = soup.find('h1', class_='news-title')
         if not title:
-            return
+            return None
         title = title.text.strip()
         return title
 
     def find_body(self, soup) -> str | None:
-        content = ""
+        content = ''
 
         main_block = soup.find('div', attrs={'itemprop': 'articleBody'})
         contents = main_block.find_all('p')

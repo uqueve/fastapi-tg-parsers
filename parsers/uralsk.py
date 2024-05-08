@@ -2,7 +2,6 @@ import asyncio
 import random
 from dataclasses import dataclass
 
-
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
 from utils.models import Post, SiteModel
@@ -69,7 +68,7 @@ class UralskParser(BaseParser, BaseRequest):
         return title
 
     def find_body(self, soup) -> str | None:
-        content = ""
+        content = ''
         div = soup.find('div', class_='entry__article')
         div_p = div.find_all('p')
         for p in div_p:

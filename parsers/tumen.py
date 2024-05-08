@@ -75,7 +75,10 @@ class TumenParser(BaseParser, BaseRequest):
 
     def find_body(self, soup: BeautifulSoup) -> str | None:
         body = ''
-        divs = soup.find_all('div', class_='uiArticleBlockText_i9h2o text-style-body-1 c-text block_fefJj')
+        divs = soup.find_all(
+            'div',
+            class_='uiArticleBlockText_i9h2o text-style-body-1 c-text block_fefJj',
+        )
         for div in divs:
             p = div.find('p')
             if not p:

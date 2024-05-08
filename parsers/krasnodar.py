@@ -50,11 +50,16 @@ class KrasnodarParser(BaseParser, BaseRequest):
         return title
 
     def find_body(self, soup: BeautifulSoup) -> str:
-        content = soup.find('div', class_=lambda value: find_value(value, 'material__content_detail_text'))
+        content = soup.find(
+            'div',
+            class_=lambda value: find_value(value, 'material__content_detail_text'),
+        )
         return content.text.replace('\xa0', ' ').strip()
 
     def find_photos(self, soup: BeautifulSoup) -> list:
-        photo = self.__base_url + soup.find('figure', class_='figure').find('a').get('href')
+        photo = self.__base_url + soup.find('figure', class_='figure').find('a').get(
+            'href',
+        )
         return [photo]
 
 

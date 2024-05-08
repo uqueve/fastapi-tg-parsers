@@ -2,7 +2,6 @@ import asyncio
 import random
 from dataclasses import dataclass
 
-
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
 from utils.models import Post, SiteModel
@@ -99,4 +98,3 @@ async def test():
 
 if __name__ == '__main__':
     asyncio.run(test())
-

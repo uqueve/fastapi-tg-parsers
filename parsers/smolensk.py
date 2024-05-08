@@ -85,7 +85,10 @@ class SmolenskParser(BaseParser, BaseRequest):
     def find_photos(self, soup: BeautifulSoup) -> list:
         photos = []
         content_div = soup.find('div', class_='entry-content')
-        photo_divs = content_div.find_all('figure', class_=lambda value: find_value(value, 'wp-block-image'))
+        photo_divs = content_div.find_all(
+            'figure',
+            class_=lambda value: find_value(value, 'wp-block-image'),
+        )
         for photo_div in photo_divs:
             if photo_div:
                 photo = photo_div.find('img').get('src')

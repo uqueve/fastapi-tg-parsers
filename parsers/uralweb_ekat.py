@@ -66,7 +66,7 @@ class UralwebEkatParser(BaseParser, BaseRequest):
         return title
 
     def find_body(self, soup) -> str | None:
-        content = ""
+        content = ''
         div_c = soup.find('div', class_='n-ict clearfix news-detail-body')
         div_p = div_c.find_all('p')
         for p in div_p:
