@@ -67,11 +67,11 @@ class NewsRepository:
         collection = self.connection['news']
         collection.update_one(filter={"oid": news_id}, update={'$set': {"body": body}})
 
-    def get_unread_news(self, city: str | None):
+    def get_unread_news(self, city: str | None, limit: int, offset: int):
         collection = self.connection['news']
         if not city:
-            return collection.find(filter={"sent": False, "posted": True}).sort("date", -1)
-        return collection.find(filter={"city.ru": city, "posted": True}).sort("date", -1)
+            return collection.find(filter={"sent": False, "posted": True}).sort("date", -1).skip(offset).limit(limit)
+        return collection.find(filter={"city.ru": city, "posted": True}).sort("date", -1).skip(offset).limit(limit)
 
     def get_news_by_oid(self, oid: str):
         collection = self.connection['news']
