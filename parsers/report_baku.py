@@ -2,6 +2,8 @@ import asyncio
 import random
 from dataclasses import dataclass
 
+from bs4 import BeautifulSoup
+
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
 from utils.models import Post, SiteModel
@@ -16,7 +18,7 @@ class ReportBakuParser(BaseParser, BaseRequest):
     referer = 'https://report.az/ru/'
     # TODO: 503 Service Temporarily Unavailable
 
-    async def get_news(self, urls, max_news: int | None = None) -> list[Post]:
+    async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
         if max_news:
             self.max_news = max_news
         news = []
@@ -41,12 +43,12 @@ class ReportBakuParser(BaseParser, BaseRequest):
             urls.append(link)
         return urls
 
-    def find_title(self, soup) -> str | None:
+    def find_title(self, soup: BeautifulSoup) -> str | None:
         title = soup.find('h1', class_='news-title').text.replace('\xa0', ' ').strip()
 
         return title
 
-    def find_body(self, soup) -> str | None:
+    def find_body(self, soup: BeautifulSoup) -> str | None:
         content = ''
         main_div = soup.find('div', class_='editor-body')
         if main_div:
@@ -56,7 +58,7 @@ class ReportBakuParser(BaseParser, BaseRequest):
                     content += p.text.replace('\xa0', ' ').strip() + '\n'
         return content
 
-    def find_photos(self, soup) -> list[str] | list:
+    def find_photos(self, soup: BeautifulSoup) -> list[str] | list:
         image_urls = []
 
         image = soup.find('div', class_='news-cover')
@@ -68,7 +70,7 @@ class ReportBakuParser(BaseParser, BaseRequest):
         return image_urls
 
 
-async def test():
+async def test() -> None:
     parser = ReportBakuParser()
     urls = await parser.find_news_urls()
     # print(urls)

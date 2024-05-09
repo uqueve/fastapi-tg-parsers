@@ -35,9 +35,9 @@ class BaseRequest:
 
     async def get_soup(
         self,
-        url,
-        headers=None,
-        cookies=None,
+        url: str,
+        headers: dict = None,
+        cookies: dict = None,
         referer: str = None,
     ) -> BeautifulSoup:
         response = await self._make_async_request(
@@ -51,10 +51,10 @@ class BaseRequest:
 
     async def get_json(
         self,
-        url,
-        headers=None,
-        cookies=None,
-        json=True,
+        url: str,
+        headers: dict = None,
+        cookies: dict = None,
+        json: bool = True,
         referer: str = None,
     ) -> dict:
         return await self._make_async_request(
@@ -67,9 +67,9 @@ class BaseRequest:
 
     async def _make_async_request(
         self,
-        url,
-        headers=None,
-        cookies=None,
+        url: str,
+        headers: dict = None,
+        cookies: dict = None,
         json: bool = False,
         referer: str = None,
     ) -> Any:
@@ -101,9 +101,10 @@ class BaseRequest:
                 else:
                     return await response.json()
         except TimeoutError:
+            max_retries = 3
             retries = 1
 
-            while retries <= 3:
+            while retries <= max_retries:
                 logger.warning(
                     f'TimeoutError. Ещё одна попытка запроса: {retries}... Парсер: {self.name}. Url: {url}',
                 )
@@ -128,8 +129,8 @@ class BaseRequest:
 
     async def _retry_async_request(
         self,
-        url,
-        headers=None,
+        url: str,
+        headers: dict = None,
         json: bool = False,
         referer: str = None,
     ) -> Any:
@@ -163,8 +164,8 @@ class BaseRequest:
 
     async def __make_async_request_with_proxies(
         self,
-        url,
-        headers=None,
+        url: str,
+        headers: dict = None,
         json: bool = False,
     ) -> Any:
         # TODO: aiohttp/connector.py:909: RuntimeWarning: An HTTPS request is being sent through an HTTPS proxy.

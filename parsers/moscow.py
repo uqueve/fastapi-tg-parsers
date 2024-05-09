@@ -3,6 +3,8 @@ import json
 import random
 from dataclasses import dataclass
 
+from bs4 import BeautifulSoup
+
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
 from utils.models import Post, SiteModel
@@ -33,7 +35,7 @@ class MoscowParser(BaseParser, BaseRequest):
     __news_url = __base_url + '/amp/location_Moskva/more.json'
     referer = 'https://ria.ru/amp/location_Moskva/'
 
-    async def get_news(self, urls, max_news: int | None = None) -> list[Post]:
+    async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
         if max_news:
             self.max_news = max_news
         news = []
@@ -56,11 +58,11 @@ class MoscowParser(BaseParser, BaseRequest):
             urls.append(new['url'])
         return urls
 
-    def find_title(self, soup) -> str | None:
+    def find_title(self, soup: BeautifulSoup) -> str | None:
         title = soup.find(['div', 'h1'], class_='article__title').text.strip()
         return title
 
-    def find_body(self, soup) -> str | None:
+    def find_body(self, soup: BeautifulSoup) -> str | None:
         content = ''
         div = soup.find('div', class_='article__body js-mediator-article mia-analytics')
         divs = div.find_all('div', 'article__block')
@@ -71,7 +73,7 @@ class MoscowParser(BaseParser, BaseRequest):
                 continue
         return content
 
-    def find_photos(self, soup) -> list[str] | list:
+    def find_photos(self, soup: BeautifulSoup) -> list[str] | list:
         image_urls = []
         photo_div = soup.find('div', class_='article__announce')
         photo_div = photo_div.find('div', class_='photoview__open')
@@ -84,7 +86,7 @@ class MoscowParser(BaseParser, BaseRequest):
         return image_urls
 
 
-async def test():
+async def test() -> None:
     parser = MoscowParser()
     urls = await parser.find_news_urls()
     # print(urls)

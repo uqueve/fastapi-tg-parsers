@@ -36,7 +36,7 @@ class MagadanParser(BaseParser, BaseRequest):
     __news_url: str = 'https://kolyma.ru/index.php?do=cat&category=news'
     referer: str = 'https://kolyma.ru/index.php?do=cat&category=news'
 
-    async def get_news(self, urls, max_news: int | None = None) -> list[Post]:
+    async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
         if max_news:
             self.max_news = max_news
         news = []
@@ -89,15 +89,13 @@ class MagadanParser(BaseParser, BaseRequest):
         return photos
 
 
-def find_value(value, example):
+def find_value(value: str, example: str) -> bool:
     if value:
-        if value.startswith(example):
-            return True
-        return False
+        return bool(value.startswith(example))
     return False
 
 
-async def test():
+async def test() -> None:
     parser = MagadanParser()
     urls = await parser.find_news_urls()
     # print(urls)

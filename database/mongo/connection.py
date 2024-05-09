@@ -15,6 +15,6 @@ def get_mongo_database(settings: Settings) -> Database:
     return database
 
 
-def get_mongo_collection(connection, collection_name) -> Collection:
+def get_mongo_collection(connection: Database, collection_name: str) -> Collection:
     collection = connection[collection_name]
     return collection

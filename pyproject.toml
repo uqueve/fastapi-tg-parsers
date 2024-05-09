@@ -9,19 +9,94 @@ line-length = 152
 quote-style = "single"
 
 [tool.ruff.lint]
-select = ["ALL"]
-#select = [
-#    # pycodestyle
-#    "E",
-#    # Pyflakes
-#    "F",
-#    # pyupgrade
-#    "UP",
-#    # flake8-bugbear
-#    "B",
-#    # flake8-simplify
-#    "SIM",
-#    # isort
-#    "I",
-#]
+# preview = true
+select = [
+    # pycodestyle
+    "E",
+    # pycodestyle warnings
+    "W",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+    # pep8-naming
+    "N",
+    # type private function return
+    "ANN202",
+    # type function return
+    "ANN201",
+    # type function arguments
+    "ANN001",
+    # comma
+    "COM",
+    # comprehansions
+    "C4",
+    # datetime
+    "DTZ",
+    # django
+    "DJ",
+    "ASYNC",
+    # imports
+    "ICN",
+    # try-except with logging
+    "S110",
+    # sql injections
+    "S608",
+    # django sql-injection
+    "S610",
+    # jinja xss
+    "S701",
+    # builtins
+    "A",
+    # logging
+    "LOG",
+    "PIE",
+    # print
+#    "T20"
+    "PYI",
+    # pytest
+    "PT",
+    # raise
+    "RSE",
+    # better return
+#    "RET",
+    # self
+    "SLF",
+    # simplify
+    "SIM",
+    # imports
+    "TID",
+    # type-checking
+    "TCH",
+    # unused args
+    "ARG",
+    # better paths
+    "PTH",
+    # pylint
+    "PL",
+    "TRY",
+    "FLY",
+    "AIR",
+    # performance
+#    "PERF",
+    "FURB",
+    "RUF008",
+    "RUF005",
+    "RUF010",
+    "RUF009",
+    "RUF022",
+    "RUF021",
+    "RUF025",
+    "RUF024",
+    "RUF027",
+    "RUF026",
+    "RUF028",
+    "RUF029",
+]
 extend-select = ["E501"]

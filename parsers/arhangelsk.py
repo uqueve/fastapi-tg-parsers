@@ -37,7 +37,7 @@ class ArhangelskParser(BaseParser, BaseRequest):
     referer: str = 'https://29.ru/'
     # TODO: ddos-guard
 
-    async def get_news(self, urls, max_news: int | None = None) -> list[Post]:
+    async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
         if max_news:
             self.max_news = max_news
         news = []
@@ -98,7 +98,7 @@ class ArhangelskParser(BaseParser, BaseRequest):
         return photos
 
 
-def find_value(value, example):
+def find_value(value: str, example: str) -> bool:
     if value:
         if value.startswith(example):
             return True
@@ -106,7 +106,7 @@ def find_value(value, example):
     return False
 
 
-async def test():
+async def test() -> None:
     parser = ArhangelskParser()
     urls = await parser.find_news_urls()
     # print(urls)

@@ -34,7 +34,7 @@ class AlmataParser(BaseParser, BaseRequest):
     __news_url = __base_url + 'news'
     referer = 'https://www.inalmaty.kz/news'
 
-    async def get_news(self, urls, max_news: int | None = None) -> list[Post]:
+    async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
         if max_news:
             self.max_news = max_news
         news = []
@@ -69,7 +69,7 @@ class AlmataParser(BaseParser, BaseRequest):
             news.append(new)
         return news
 
-    async def find_news_urls(self, max_news=3) -> list[str]:
+    async def find_news_urls(self, max_news: int = 3) -> list[str]:
         urls = []
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers)
@@ -107,7 +107,7 @@ class AlmataParser(BaseParser, BaseRequest):
                 continue
         return urls
 
-    def find_photos(self, json_resp) -> list[str]:
+    def find_photos(self, json_resp: dict) -> list[str]:
         image_urls = []
         with contextlib.suppress(KeyError):
             image_urls.append(json_resp['internalPoster']['url'])
@@ -123,7 +123,7 @@ class AlmataParser(BaseParser, BaseRequest):
                 continue
         return image_urls
 
-    def find_body(self, json_resp) -> str:
+    def find_body(self, json_resp: dict) -> str:
         body = ''
         parsed_content = json_resp['parsedContent']
         for content in parsed_content:
@@ -137,12 +137,12 @@ class AlmataParser(BaseParser, BaseRequest):
             body += cleantext.replace('\xa0', ' ').strip() + '\n'
         return body
 
-    def find_title(self, json_resp) -> str:
+    def find_title(self, json_resp: dict) -> str:
         title = json_resp['title']
         return title
 
 
-async def test():
+async def test() -> None:
     parser = AlmataParser()
     urls = await parser.find_news_urls()
     # print(urls)

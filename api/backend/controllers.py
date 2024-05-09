@@ -6,7 +6,7 @@ from utils.models import Post, PostOut
 logger = logging.getLogger(__name__)
 
 
-def get_unread_news(city: str | None, limit: int, offset: int):
+def get_unread_news(city: str | None, limit: int, offset: int) -> list[PostOut]:
     news_list = []
     news = mongo.get_unread_news(city=city, limit=limit, offset=offset)
     for new in news:
@@ -29,16 +29,16 @@ def get_unread_news(city: str | None, limit: int, offset: int):
     return news_list
 
 
-def set_news_read(news_list_read: list):
+def set_news_read(news_list_read: list) -> bool:
     news_read_list_of_id = []
     for news_id in news_list_read:
         news_read_list_of_id.append(news_id)
     try:
         mongo.update_news_set_read(news_read_list_of_id)
-        return True
     except Exception:
         logger.exception('Error with update news status setting "read"')
         return False
+    return True
 
 
 def get_news_by_oid(news_oid: str) -> PostOut | None:

@@ -9,21 +9,21 @@ import parsers
 from bot.main import send_news
 from database.mongo import mongo
 from parsers.models.base import BaseParser
-from utils.exceptions.post import PostValidateException
-from utils.exceptions.telegram import TelegramSendException
+from utils.exceptions.post import PostValidateError
+from utils.exceptions.telegram import TelegramSendError
 from utils.models import CitySchema, Post, SiteModel
 
 logger = logging.getLogger(__name__)
 
 
-async def start_parsers():
+async def start_parsers() -> None:
     scheduler = AsyncIOScheduler()
     scheduler.add_job(parse_news, 'interval', hours=3, name='Парсинг новостей')
     scheduler.add_job(post_news, 'interval', hours=3, name='Постинг новостей')
     scheduler.start()
 
 
-async def parse_news():
+async def parse_news() -> None:
     n = 0
     for _parser_class_str, parser_class in inspect.getmembers(
         parsers,
@@ -63,18 +63,18 @@ async def parse_news():
                 )
                 try:
                     post.post_validate()
-                except PostValidateException as exception:
+                except PostValidateError as exception:
                     logger.warning(f'Пост пропущен. Details: {exception.message}')
                     continue
                 mongo.add_one_news(post=post)
                 n += 1
-        except Exception as e:
-            logger.exception(f'Error with parsing posts: {e}')
+        except Exception:
+            logger.exception('Error with parsing posts')
             continue
     logging.info(f'Новостей добавлено за цикл парсинга: {n}')
 
 
-async def post_news():
+async def post_news() -> None:
     s = 0
     for city in SiteModel:
         try:
@@ -89,10 +89,10 @@ async def post_news():
                 logger.warning(
                     f'Не найдено неотправленных новостей в городе {city!s}',
                 )
-        except TelegramSendException as error:
+        except TelegramSendError as error:
             logging.exception(f'{error.message}')
-        except Exception as e:
-            logging.exception(f'Error with sending posts: {e}')
+        except Exception:
+            logging.exception('Error with sending posts')
             continue
     logging.info(f'Новостей отправлено по каналам за цикл: {s}')
 

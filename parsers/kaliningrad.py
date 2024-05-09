@@ -2,7 +2,7 @@ import asyncio
 import random
 from dataclasses import dataclass
 
-from bs4 import ResultSet, Tag
+from bs4 import ResultSet, Tag, BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
@@ -36,7 +36,7 @@ class KaliningradParser(BaseParser, BaseRequest):
     __news_url = 'https://kgd.ru/news'
     referer = 'https://kgd.ru/news'
 
-    async def get_news(self, urls, max_news: int | None = None) -> list[Post]:
+    async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
         if max_news:
             self.max_news = max_news
         news = []
@@ -64,14 +64,14 @@ class KaliningradParser(BaseParser, BaseRequest):
             urls.append(url)
         return urls
 
-    def find_title(self, soup) -> str | None:
+    def find_title(self, soup: BeautifulSoup) -> str | None:
         title = soup.find('h1', class_='itemTitle')
         if not title:
             return None
         title = title.text.strip()
         return title
 
-    def find_body(self, soup) -> str | None:
+    def find_body(self, soup: BeautifulSoup) -> str | None:
         content = ''
 
         main_block = soup.find('div', class_='itemFullText')
@@ -84,7 +84,7 @@ class KaliningradParser(BaseParser, BaseRequest):
             return None
         return content
 
-    def find_photos(self, soup) -> list[str] | list:
+    def find_photos(self, soup: BeautifulSoup) -> list[str] | list:
         image_urls = []
         # print(soup)
         main_photo = soup.find('div', class_='itemImage')
@@ -103,15 +103,13 @@ class KaliningradParser(BaseParser, BaseRequest):
         return image_urls
 
 
-def find_value(value, example):
+def find_value(value: str, example: str) -> bool:
     if value:
-        if value.startswith(example):
-            return True
-        return False
+        return bool(value.startswith(example))
     return False
 
 
-async def test():
+async def test() -> None:
     parser = KaliningradParser()
     urls = await parser.find_news_urls()
     # print(urls)

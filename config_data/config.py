@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     FASTAPI_API_KEY_HEADER: str = ''
 
 
-def setup_settings():
+def setup_settings() -> Settings:
     settings = Settings()
     load_dotenv()
     settings.DB_HOST = os.getenv('MONGO_HOST')
@@ -50,6 +50,6 @@ def setup_settings():
 
 
 @lru_cache
-def get_settings():
+def get_settings() -> Settings:
     settings = setup_settings()
     return settings

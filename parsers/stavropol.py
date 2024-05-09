@@ -2,6 +2,8 @@ import asyncio
 import random
 from dataclasses import dataclass
 
+from bs4 import BeautifulSoup
+
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
 from utils.models import Post, SiteModel
@@ -33,7 +35,7 @@ class StavropolParser(BaseParser, BaseRequest):
     __news_url = __base_url
     referer = 'https://news.1777.ru/'
 
-    async def get_news(self, urls, max_news: int | None = None) -> list[Post]:
+    async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
         if max_news:
             self.max_news = max_news
         news = []
@@ -63,20 +65,20 @@ class StavropolParser(BaseParser, BaseRequest):
             urls.append(url)
         return urls
 
-    def find_title(self, soup) -> str | None:
+    def find_title(self, soup: BeautifulSoup) -> str | None:
         title_ = soup.find('h1', class_='news_render_one_header')
         if not title_:
             return None
         title = title_.text.replace('\xa0', ' ').strip()
         return title
 
-    def find_body(self, soup) -> str | None:
+    def find_body(self, soup: BeautifulSoup) -> str | None:
         content = ''
         div = soup.find('td', class_='news_render_one_full_story')
         content += div.text.replace('\xa0', ' ').strip()
         return content
 
-    def find_photos(self, soup) -> list[str] | list:
+    def find_photos(self, soup: BeautifulSoup) -> list[str] | list:
         images_urls = []
         div = soup.find('td', class_='news_render_one_full_image')
         if div:
@@ -89,7 +91,7 @@ class StavropolParser(BaseParser, BaseRequest):
         return images_urls
 
 
-async def test():
+async def test() -> None:
     parser = StavropolParser()
     urls = await parser.find_news_urls()
     # print(urls)

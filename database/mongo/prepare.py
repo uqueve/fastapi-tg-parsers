@@ -2,7 +2,7 @@ from database.mongo import connection
 from database.mongo.sities import cities
 
 
-def prepare_database():
+def prepare_database() -> None:
     colls = connection.list_collection_names()
     if 'news' not in colls:
         connection.create_collection(name='news')

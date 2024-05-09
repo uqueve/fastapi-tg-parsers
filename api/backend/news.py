@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from api.backend.auth import check_api_key
 from api.backend.controllers import get_news_by_oid, get_unread_news, set_news_read
-from utils.exceptions.api import ApplicationException
+from utils.exceptions.api import ApplicationError
 from utils.models import ErrorSchema, News, PostOut
 
 logger = logging.getLogger(__name__)
@@ -34,10 +34,10 @@ async def get_all_news(
     ] = None,
     limit: Annotated[int | None, Query(title='Лимит')] = 3,
     offset: Annotated[int | None, Query(title='Смещение')] = 0,
-):
+) -> list[PostOut] | HTTPException:
     try:
         news = get_unread_news(city=city, limit=limit, offset=offset)
-    except ApplicationException as ex:
+    except ApplicationError as ex:
         logger.exception('Problem with getting unread news')
         return HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -70,10 +70,10 @@ async def get_one_news_by_oid(
             ],
         ),
     ],
-):
+) -> PostOut | None | HTTPException:
     try:
         news = get_news_by_oid(oid)
-    except ApplicationException as ex:
+    except ApplicationError as ex:
         logger.exception('Problem with getting news by oid')
         return HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -94,11 +94,11 @@ async def get_one_news_by_oid(
     },
     summary='Пометить новость прочитанной',
 )
-async def set_read_news(news: News):
+async def set_read_news(news: News) -> dict | HTTPException:
     news_list_read: list = news.ids
     try:
         set_news_read(news_list_read)
-    except ApplicationException as ex:
+    except ApplicationError as ex:
         return HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail={'error': ex.message},

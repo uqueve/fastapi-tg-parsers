@@ -69,6 +69,7 @@ class OpenAIService:
 
 if __name__ == '__main__':
     oi = OpenAIService()
+    # ruff: noqa
     print(
         oi.make_request(
             texts="""

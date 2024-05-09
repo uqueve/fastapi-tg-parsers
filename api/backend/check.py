@@ -10,7 +10,7 @@ health_router = APIRouter(tags=['Health'])
     status_code=status.HTTP_200_OK,
     description='Тест работы бэкенда',
 )
-async def check_health():
+async def check_health() -> dict:
     return {'status': 'ok'}
 
 
@@ -20,5 +20,5 @@ async def check_health():
     dependencies=[Depends(check_api_key)],
     description='Проверка подключения к бэкенду по apikey',
 )
-async def check_health_apikey():
+async def check_health_apikey() -> dict:
     return {'status': 'ok'}

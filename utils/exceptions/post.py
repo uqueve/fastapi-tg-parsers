@@ -2,23 +2,23 @@ from dataclasses import dataclass
 
 
 @dataclass(eq=False)
-class PostValidateException(Exception):
+class PostValidateError(Exception):
     link: str | None = None
 
     @property
-    def message(self):
+    def message(self) -> str:
         return 'Произошла ошибка валидации поста'
 
 
 @dataclass
-class PostNoTitleError(PostValidateException):
+class PostNoTitleError(PostValidateError):
     @property
-    def message(self):
+    def message(self) -> str:
         return f'Нет заголовка в новости. URL: {self.link}'
 
 
 @dataclass
-class PostNoBodyError(PostValidateException):
+class PostNoBodyError(PostValidateError):
     @property
-    def message(self):
+    def message(self) -> str:
         return f'Нет тела новости. URL: {self.link}'

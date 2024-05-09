@@ -2,6 +2,8 @@ import asyncio
 import random
 from dataclasses import dataclass
 
+from bs4 import BeautifulSoup
+
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
 from utils.models import Post, SiteModel
@@ -33,7 +35,7 @@ class StepnogorskParser(BaseParser, BaseRequest):
     __news_url = 'https://www.zakon.kz/gorod/stepnogorsk/'
     referer = 'https://www.zakon.kz/gorod/stepnogorsk/'
 
-    async def get_news(self, urls, max_news: int | None = None) -> list[Post]:
+    async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
         if max_news:
             self.max_news = max_news
         news = []
@@ -64,7 +66,7 @@ class StepnogorskParser(BaseParser, BaseRequest):
             urls.append(url)
         return urls
 
-    def find_title(self, soup) -> str | None:
+    def find_title(self, soup: BeautifulSoup) -> str | None:
         main_block = soup.find('div', class_='articleBlock')
         title = main_block.find('h1')
         if not title:
@@ -72,7 +74,7 @@ class StepnogorskParser(BaseParser, BaseRequest):
         title = title.text.strip()
         return title
 
-    def find_body(self, soup) -> str | None:
+    def find_body(self, soup: BeautifulSoup) -> str | None:
         content = ''
 
         main_block = soup.find('div', class_='articleBlock')
@@ -89,7 +91,7 @@ class StepnogorskParser(BaseParser, BaseRequest):
             return None
         return content
 
-    def find_photos(self, soup) -> list[str] | list:
+    def find_photos(self, soup: BeautifulSoup) -> list[str] | list:
         image_urls = []
         main_image = soup.find('div', class_='articleImg articleMainImg')
         if main_image:
@@ -99,15 +101,13 @@ class StepnogorskParser(BaseParser, BaseRequest):
         return image_urls
 
 
-def find_value(value, example):
+def find_value(value: str, example: str) -> bool:
     if value:
-        if value.startswith(example):
-            return True
-        return False
+        return bool(value.startswith(example))
     return False
 
 
-async def test():
+async def test() -> None:
     parser = StepnogorskParser()
     urls = await parser.find_news_urls()
     # print(urls)

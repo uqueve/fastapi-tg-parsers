@@ -16,7 +16,7 @@ class SurgutParser(BaseParser, BaseRequest):
     __base_url: str = 'https://sitv.ru'
     __news_url: str = 'https://sitv.ru/arhiv/news/'
 
-    async def get_news(self, urls, max_news: int | None = None) -> list[Post]:
+    async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
         if max_news:
             self.max_news = max_news
         news = []
@@ -56,7 +56,7 @@ class SurgutParser(BaseParser, BaseRequest):
         return []
 
 
-async def test():
+async def test() -> None:
     parser = SurgutParser()
     urls = await parser.find_news_urls()
     # print(urls)

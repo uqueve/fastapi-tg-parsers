@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass(eq=False)
-class ParserException(Exception):
+class ParserError(Exception):
     @property
-    def message(self):
+    def message(self) -> str:
         return 'Произошла ошибка парсера'

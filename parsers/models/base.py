@@ -39,26 +39,26 @@ class BaseParser(ABC):
     def get_new(self, soup: BeautifulSoup | dict, url: str) -> Post | None:
         try:
             self.title = self.find_title(soup)
-        except AttributeError as ex:
-            logger.error(f'TITLE ERROR: {ex}. Парсер: {self.name}. URL: {url}')
-        except Exception as ex:
-            logger.error(f'TITLE ERROR: {ex}. Парсер: {self.name}. URL: {url}')
+        except AttributeError:
+            logger.exception(f'TITLE ERROR. Парсер: {self.name}. URL: {url}')
+        except Exception:
+            logger.exception(f'TITLE ERROR. Парсер: {self.name}. URL: {url}')
 
         if not self.title:
             return None
 
         try:
             self.body = self.find_body(soup)
-        except Exception as ex:
-            logger.error(f'BODY ERROR: {ex}. Парсер: {self.name}. URL: {url}')
+        except Exception:
+            logger.exception(f'BODY ERROR. Парсер: {self.name}. URL: {url}')
 
         if not self.body:
             return None
 
         try:
             self.image_links = self.find_photos(soup)
-        except Exception as ex:
-            logger.error(f'IMAGE LINKS ERROR: {ex}. Парсер: {self.name}. URL: {url}')
+        except Exception:
+            logger.exception(f'IMAGE LINKS ERROR. Парсер: {self.name}. URL: {url}')
 
         return Post(
             title=self.title,

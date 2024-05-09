@@ -2,6 +2,8 @@ import asyncio
 import random
 from dataclasses import dataclass
 
+from bs4 import BeautifulSoup
+
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
 from utils.models import Post, SiteModel
@@ -31,7 +33,7 @@ class UralwebEkatParser(BaseParser, BaseRequest):
     __news_url = __base_url + 'news/'
     referer = 'https://www.uralweb.ru/news/'
 
-    async def get_news(self, urls, max_news: int | None = None) -> list[Post]:
+    async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
         if max_news:
             self.max_news = max_news
         news = []
@@ -58,14 +60,14 @@ class UralwebEkatParser(BaseParser, BaseRequest):
             urls.append(url)
         return urls
 
-    def find_title(self, soup) -> str | None:
+    def find_title(self, soup: BeautifulSoup) -> str | None:
         title_ = soup.find('h1')
         if not title_:
             return None
         title = title_.text.replace('\xa0', ' ').strip()
         return title
 
-    def find_body(self, soup) -> str | None:
+    def find_body(self, soup: BeautifulSoup) -> str | None:
         content = ''
         div_c = soup.find('div', class_='n-ict clearfix news-detail-body')
         div_p = div_c.find_all('p')
@@ -76,7 +78,7 @@ class UralwebEkatParser(BaseParser, BaseRequest):
                 continue
         return content
 
-    def find_photos(self, soup) -> list[str] | list:
+    def find_photos(self, soup: BeautifulSoup) -> list[str] | list:
         image_urls = []
 
         photo = soup.find('div', attrs={'id': 'photoblock'})
@@ -88,7 +90,7 @@ class UralwebEkatParser(BaseParser, BaseRequest):
         return image_urls
 
 
-async def test():
+async def test() -> None:
     parser = UralwebEkatParser()
     urls = await parser.find_news_urls()
     # print(urls)

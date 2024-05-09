@@ -2,6 +2,8 @@ import asyncio
 import random
 from dataclasses import dataclass
 
+from bs4 import BeautifulSoup
+
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
 from utils.models import Post, SiteModel
@@ -32,7 +34,7 @@ class ChitaParser(BaseParser, BaseRequest):
     __news_url = __base_url + '/news/'
     referer = 'https://www.mkchita.ru/'
 
-    async def get_news(self, urls, max_news: int | None = None) -> list[Post]:
+    async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
         if max_news:
             self.max_news = max_news
         news = []
@@ -59,7 +61,7 @@ class ChitaParser(BaseParser, BaseRequest):
             urls.append(url)
         return urls
 
-    def find_title(self, soup) -> str | None:
+    def find_title(self, soup: BeautifulSoup) -> str | None:
         main_block = soup.find('main', class_='article')
 
         if not main_block:
@@ -69,7 +71,7 @@ class ChitaParser(BaseParser, BaseRequest):
 
         return title
 
-    def find_body(self, soup) -> str | None:
+    def find_body(self, soup: BeautifulSoup) -> str | None:
         content = ''
 
         main_block = soup.find('main', class_='article')
@@ -81,7 +83,7 @@ class ChitaParser(BaseParser, BaseRequest):
             return None
         return content
 
-    def find_photos(self, soup) -> list[str] | list:
+    def find_photos(self, soup: BeautifulSoup) -> list[str] | list:
         image_urls = []
         main_block = soup.find('main', class_='article')
         photo_div = main_block.find('img', class_='article__picture-image')
@@ -92,7 +94,7 @@ class ChitaParser(BaseParser, BaseRequest):
         return image_urls
 
 
-async def test():
+async def test() -> None:
     parser = ChitaParser()
     urls = await parser.find_news_urls()
     # print(urls)

@@ -1,4 +1,5 @@
 import datetime as dt
+import logging
 from dataclasses import dataclass
 from enum import StrEnum, auto, unique
 from uuid import uuid4
@@ -8,6 +9,8 @@ from pydantic import BaseModel, Field
 from utils.exceptions.post import PostNoBodyError, PostNoTitleError
 from utils.openai_service import OpenAIService
 from utils.text_sevice import to_chunks
+
+logger = logging.getLogger(__name__)
 
 
 @unique
@@ -62,7 +65,7 @@ class CitySchema:
     name: str
     ru: str
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         return {'oid': self.oid, 'name': self.name, 'ru': self.ru}
 
 
@@ -92,7 +95,7 @@ class Post(BaseModel):
     posted: bool = Field(default=False)
     sent: bool = Field(default=False)
 
-    def model_post_init(self, __context):
+    def model_post_init(self, __context) -> None:
         self.oid = str(self.oid)
 
     def __str__(self):
@@ -102,32 +105,32 @@ class Post(BaseModel):
 
         return f'{self.title}\n\n{self.body}\n\nlinks:\n{links}\n{self.date}'
 
-    def post_validate(self):
+    def post_validate(self) -> None:
         if not self.title:
             raise PostNoTitleError(link=self.link)
         if not self.body:
             raise PostNoBodyError(link=self.link)
 
-    def get_text(self):
+    def get_text(self) -> str:
         result = f'{self.title}\n\n{self.body}'
         return result
 
-    def get_title(self):
+    def get_title(self) -> str:
         return self.title.capitalize()
 
-    def get_body(self):
+    def get_body(self) -> str:
         return self.body
 
-    def get_link(self, index):
+    def get_link(self, index: int) -> str:
         return self.image_links[index]
 
-    def get_links(self):
+    def get_links(self) -> list[str]:
         return self.image_links
 
-    def images_count(self):
+    def images_count(self) -> int:
         return len(self.image_links)
 
-    def get_date(self):
+    def get_date(self) -> dt.datetime:
         return self.date
 
 
@@ -170,15 +173,15 @@ class CustomMediaChunks:
                     self.media.append(dict(type='photo', media=post.get_link(i)))
                     self.media[0]['caption'] = post.get_text()
                 except Exception:
-                    pass
+                    logger.exception('CustomMediaChunks media append error')
 
-    def get_media(self):
+    def get_media(self) -> list[dict]:
         return self.media
 
-    def get_text_chunks(self):
+    def get_text_chunks(self) -> [str]:
         return self.chunks
 
-    def get_link(self):
+    def get_link(self) -> str:
         if self.post.images_count() > 0:
             return self.post.get_link(0)
         else:

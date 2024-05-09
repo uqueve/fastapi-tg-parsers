@@ -2,6 +2,8 @@ import asyncio
 import random
 from dataclasses import dataclass
 
+from bs4 import BeautifulSoup
+
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
 from utils.models import Post, SiteModel
@@ -32,7 +34,7 @@ class CherepovecParser(BaseParser, BaseRequest):
     __news_url = __base_url + '/news'
     referer = 'https://cherinfo.ru/news'
 
-    async def get_news(self, urls, max_news: int | None = None) -> list[Post]:
+    async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
         if max_news:
             self.max_news = max_news
         news = []
@@ -67,7 +69,7 @@ class CherepovecParser(BaseParser, BaseRequest):
                 continue
         return urls
 
-    def find_title(self, soup) -> str | None:
+    def find_title(self, soup: BeautifulSoup) -> str | None:
         main_block = soup.find(
             'div',
             class_='col-lg-9 col-md-9 col-sm-12 col-xs-12 sticky-main print-wide ny-2023',
@@ -77,7 +79,7 @@ class CherepovecParser(BaseParser, BaseRequest):
         title = main_block.find('h1', class_='margin-bottom-small').text.replace('\xa0', ' ').strip()
         return title
 
-    def find_body(self, soup) -> str | None:
+    def find_body(self, soup: BeautifulSoup) -> str | None:
         content = ''
         main_block = soup.find(
             'div',
@@ -91,7 +93,7 @@ class CherepovecParser(BaseParser, BaseRequest):
             return None
         return content
 
-    def find_photos(self, soup) -> list[str] | list:
+    def find_photos(self, soup: BeautifulSoup) -> list[str] | list:
         image_urls = set()
         main_block = soup.find(
             'div',
@@ -115,7 +117,7 @@ class CherepovecParser(BaseParser, BaseRequest):
         return list(image_urls)
 
 
-async def test():
+async def test() -> None:
     parser = CherepovecParser()
     urls = await parser.find_news_urls()
     # print(urls)
