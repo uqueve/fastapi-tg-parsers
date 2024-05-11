@@ -12,21 +12,26 @@ def get_unread_news(city: str | None, limit: int, offset: int) -> list[PostOut]:
     for new in news:
         try:
             news_obj = Post(**new)
-            post_out = PostOut(
-                oid=news_obj.oid,
-                title=news_obj.title,
-                body=news_obj.body,
-                image_links=news_obj.image_links,
-                date=news_obj.date.strftime("'%d.%m.%Y %H:%M:%S"),
-                link=news_obj.link,
-                city=news_obj.city,
-                posted=news_obj.posted,
-                sent=news_obj.sent,
-            )
+            post_out = post_postout_adapter(post=news_obj)
             news_list.append(post_out)
         except Exception:
             logger.exception('Problem with dump models when getting unread news')
     return news_list
+
+
+def post_postout_adapter(post: Post) -> PostOut:
+    post_out = PostOut(
+        oid=post.oid,
+        title=post.title,
+        body=post.body,
+        image_links=post.image_links,
+        date=post.date.strftime("'%d.%m.%Y %H:%M:%S"),
+        link=post.link,
+        city=post.city,
+        posted=post.posted,
+        sent=post.sent,
+    )
+    return post_out
 
 
 def set_news_read(news_list_read: list) -> bool:
@@ -45,17 +50,7 @@ def get_news_by_oid(news_oid: str) -> PostOut | None:
     new = mongo.get_news_by_oid(oid=news_oid)
     try:
         news_obj = Post(**new)
-        post_out = PostOut(
-            oid=news_obj.oid,
-            title=news_obj.title,
-            body=news_obj.body,
-            image_links=news_obj.image_links,
-            date=news_obj.date.strftime("'%d.%m.%Y %H:%M:%S"),
-            link=news_obj.link,
-            city=news_obj.city,
-            posted=news_obj.posted,
-            sent=news_obj.sent,
-        )
+        post_out = post_postout_adapter(post=news_obj)
     except Exception:
         logger.exception('Problem with dump models when getting unread news')
         return None

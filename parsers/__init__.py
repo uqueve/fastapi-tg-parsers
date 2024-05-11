@@ -1,6 +1,5 @@
-from kostanai import KostanaiParser
-
 from .aksai import AksaiParser
+from .kostanai import KostanaiParser
 from .almata import AlmataParser
 from .arhangelsk import ArhangelskParser
 from .astrahan import AstrahanParser

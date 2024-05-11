@@ -6,7 +6,7 @@ from config_data.config import get_settings
 api_key_header = APIKeyHeader(name='X-API-Key')
 
 
-def check_api_key(api_key: str = Security(api_key_header)) -> True | HTTPException:
+def check_api_key(api_key: str = Security(api_key_header)):
     settings = get_settings()
     if api_key == settings.FASTAPI_API_KEY_HEADER:
         return True

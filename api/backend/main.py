@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.backend.check import health_router
 from api.backend.news import news_router
 from database.mongo.prepare import prepare_database
-from parsers.__main__ import start_parsers
+from parsers.__main__ import start_scheduler
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 async def lifespan(app_obj: FastAPI):
     # ruff: noqa
     prepare_database()
-    await start_parsers()
+    await start_scheduler()
     yield
 
 

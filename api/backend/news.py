@@ -34,7 +34,7 @@ async def get_all_news(
     ] = None,
     limit: Annotated[int | None, Query(title='Лимит')] = 3,
     offset: Annotated[int | None, Query(title='Смещение')] = 0,
-) -> list[PostOut] | HTTPException:
+):
     try:
         news = get_unread_news(city=city, limit=limit, offset=offset)
     except ApplicationError as ex:
@@ -70,7 +70,7 @@ async def get_one_news_by_oid(
             ],
         ),
     ],
-) -> PostOut | None | HTTPException:
+):
     try:
         news = get_news_by_oid(oid)
     except ApplicationError as ex:
@@ -94,7 +94,7 @@ async def get_one_news_by_oid(
     },
     summary='Пометить новость прочитанной',
 )
-async def set_read_news(news: News) -> dict | HTTPException:
+async def set_read_news(news: News):
     news_list_read: list = news.ids
     try:
         set_news_read(news_list_read)

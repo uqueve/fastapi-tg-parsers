@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import inspect
 import logging
 from copy import copy
@@ -16,10 +17,11 @@ from utils.models import CitySchema, Post, SiteModel
 logger = logging.getLogger(__name__)
 
 
-async def start_parsers() -> None:
+async def start_scheduler() -> None:
     scheduler = AsyncIOScheduler()
     scheduler.add_job(parse_news, 'interval', hours=3, name='Парсинг новостей')
     scheduler.add_job(post_news, 'interval', hours=3, name='Постинг новостей')
+    scheduler.add_job(clear_old_news, 'cron', day='*', hour=8, name='Очистка старых post: false новостей')
     scheduler.start()
 
 
@@ -95,6 +97,14 @@ async def post_news() -> None:
             logging.exception('Error with sending posts')
             continue
     logging.info(f'Новостей отправлено по каналам за цикл: {s}')
+
+
+def clear_old_news():
+    date_delta = datetime.datetime.now() - datetime.timedelta(days=4)
+    try:
+        mongo.clear_not_posted_news_by_date(date=date_delta)
+    except Exception:
+        logger.exception('Ошибка очистки новостей')
 
 
 if __name__ == '__main__':
