@@ -1,3 +1,5 @@
+from kostanai import KostanaiParser
+
 from .aksai import AksaiParser
 from .almata import AlmataParser
 from .arhangelsk import ArhangelskParser
@@ -12,20 +14,27 @@ from .gazeta_tashkent import TashkentParser
 from .irkutsk import IrkutskParser
 from .kaliningrad import KaliningradParser
 from .karakol import KarakolParser
+from .kirov import KirovParser
 from .kishinev import KishenevParser
 from .krasnodar import KrasnodarParser
+from .krasnoyarsk import KrasnoyarskParser
 from .magadan import MagadanParser
 from .magnitogorsk import MagnitogorskParser
 from .minsk import MinskParser
 from .moscow import MoscowParser
 from .murmansk import MurmanskParser
 from .narin import NarinParser
+from .nizhniy_tagil import TagilParser
 from .novokuznetsk import NovokuznetskParser
+from .novosibirsk import NovosibirskParser
 from .omsk import OmskParser
+from .penza import PenzaParser
 from .report_baku import ReportBakuParser
 from .ridder import RidderParser
 from .samara import SamaraParser
+from .samarkand import SamarkandParser
 from .sankt_piter import SanktPiterParser
+from .sevastopol import SevastopolParser
 from .smolensk import SmolenskParser
 from .sorochinsk import SorochinskParser
 from .stavropol import StavropolParser
@@ -85,4 +94,12 @@ __all__ = [
     'VladimirParser',
     'VladivostokParser',
     'VolgogradParser',
+    'KirovParser',
+    'KostanaiParser',
+    'KrasnoyarskParser',
+    'TagilParser',
+    'NovosibirskParser',
+    'PenzaParser',
+    'SamarkandParser',
+    'SevastopolParser',
 ]

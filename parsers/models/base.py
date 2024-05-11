@@ -40,24 +40,30 @@ class BaseParser(ABC):
         try:
             self.title = self.find_title(soup)
         except AttributeError:
+            print('нет тайтла')
             logger.exception(f'TITLE ERROR. Парсер: {self.name}. URL: {url}')
         except Exception:
+            print('нет тайтла')
             logger.exception(f'TITLE ERROR. Парсер: {self.name}. URL: {url}')
 
         if not self.title:
+            print('нет тайтла')
             return None
 
         try:
             self.body = self.find_body(soup)
         except Exception:
+            print('нет боди')
             logger.exception(f'BODY ERROR. Парсер: {self.name}. URL: {url}')
 
         if not self.body:
+            print('нет боди')
             return None
 
         try:
             self.image_links = self.find_photos(soup)
         except Exception:
+            print('нет фото')
             logger.exception(f'IMAGE LINKS ERROR. Парсер: {self.name}. URL: {url}')
 
         return Post(
@@ -66,6 +72,7 @@ class BaseParser(ABC):
             image_links=self.image_links,
             date=self.date,
             link=url,
+            parser_name=self.name,
         )
 
     @abstractmethod

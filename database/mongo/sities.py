@@ -262,4 +262,52 @@ cities = [
         'ru': 'Санкт-Петербург',
         'oid': '42',
     },
+    {
+        'city': SiteModel.KIROV,
+        'channel_tg_id': -1002051972911,
+        'ru': 'Киров',
+        'oid': '43',
+    },
+    {
+        'city': SiteModel.KOSTANAI,
+        'channel_tg_id': -1002136000742,
+        'ru': 'Костанай',
+        'oid': '44',
+    },
+    {
+        'city': SiteModel.KRASNOYARSK,
+        'channel_tg_id': -1002007063120,
+        'ru': 'Красноярск',
+        'oid': '45',
+    },
+    {
+        'city': SiteModel.TAGIL,
+        'channel_tg_id': -1002059105127,
+        'ru': 'Нижний Тагил',
+        'oid': '46',
+    },
+    {
+        'city': SiteModel.NOVOSIBIRSK,
+        'channel_tg_id': -1002057469151,
+        'ru': 'Новосибирск',
+        'oid': '47',
+    },
+    {
+        'city': SiteModel.PENZA,
+        'channel_tg_id': -1002004397348,
+        'ru': 'Пенза',
+        'oid': '48',
+    },
+    {
+        'city': SiteModel.SAMARKAND,
+        'channel_tg_id': -1001989200188,
+        'ru': 'Самарканд',
+        'oid': '49',
+    },
+    {
+        'city': SiteModel.SEVASTOPOL,
+        'channel_tg_id': -1002065041883,
+        'ru': 'Севастополь',
+        'oid': '50',
+    },
 ]

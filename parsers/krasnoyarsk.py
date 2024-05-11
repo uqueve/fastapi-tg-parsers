@@ -2,7 +2,7 @@ import asyncio
 import random
 from dataclasses import dataclass
 
-from bs4 import BeautifulSoup, ResultSet, Tag
+from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
@@ -13,14 +13,13 @@ headers = {
     'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,ja;q=0.6',
     'cache-control': 'max-age=0',
     'dnt': '1',
-    'if-modified-since': 'Sat, 04 May 2024 12:15:01 GMT',
     'priority': 'u=0, i',
     'sec-ch-ua': '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
     'sec-ch-ua-mobile': '?0',
     'sec-ch-ua-platform': '"Linux"',
     'sec-fetch-dest': 'document',
     'sec-fetch-mode': 'navigate',
-    'sec-fetch-site': 'cross-site',
+    'sec-fetch-site': 'none',
     'sec-fetch-user': '?1',
     'sec-gpc': '1',
     'upgrade-insecure-requests': '1',
@@ -29,12 +28,13 @@ headers = {
 
 
 @dataclass
-class KaliningradParser(BaseParser, BaseRequest):
-    city: SiteModel = SiteModel.KALININGRAD
-    name: str = 'kaliningrad'
-    __base_url = 'https://kgd.ru'
-    __news_url = 'https://kgd.ru/news'
-    referer = 'https://kgd.ru/news'
+class KrasnoyarskParser(BaseParser, BaseRequest):
+    city: SiteModel = SiteModel.KRASNOYARSK
+    name: str = 'krasnoyarsk'
+    __base_url: str = 'https://ngs24.ru'
+    __news_url: str = 'https://ngs24.ru/'
+    referer: str = 'https://ngs24.ru/'
+    # TODO: ddos-guard
 
     async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
         if max_news:
@@ -55,52 +55,46 @@ class KaliningradParser(BaseParser, BaseRequest):
         urls = []
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers)
-        news = soup.find_all('div', class_='catItemTitle')
-
-        for new in news:
-            url = new.find('a')
-            if url:
-                url = self.__base_url + url.get('href')
+        items = soup.find_all('li', class_='DxeBN', limit=15)
+        for item in items:
+            url_raw = item.find_next('a')
+            if not url_raw:
+                continue
+            url = url_raw.get('href')
+            if not url.startswith('https:'):
+                url = self.__base_url + url
             urls.append(url)
         return urls
 
     def find_title(self, soup: BeautifulSoup) -> str | None:
-        title = soup.find('h1', class_='itemTitle')
+        title = soup.find('h1', class_='title_ip27z')
         if not title:
             return None
-        title = title.text.strip()
+        title = title.text.replace('\xa0', ' ').strip()
         return title
 
     def find_body(self, soup: BeautifulSoup) -> str | None:
-        content = ''
-
-        main_block = soup.find('div', class_='itemFullText')
-        contents = main_block.find_all('p')
-        for con in contents:
-            if not con:
+        body = ''
+        divs = soup.find_all(
+            'div',
+            class_='uiArticleBlockText_i9h2o text-style-body-1 c-text block_fefJj',
+        )
+        for div in divs:
+            p = div.find('p')
+            if not p:
                 continue
-            content += con.text.replace('\xa0', ' ').strip() + '\n'
-        if 'Erid' in content:
-            return None
-        return content
+            body += p.text.replace('\xa0', ' ').strip()
+        return body
 
-    def find_photos(self, soup: BeautifulSoup) -> list[str] | list:
-        image_urls = []
-        # print(soup)
-        main_photo = soup.find('div', class_='itemImage')
-        if main_photo and (img_raw := main_photo.find('img')):
-            photo = self.__base_url + img_raw.get('src')
-            image_urls.append(photo)
-
-        images_raw: ResultSet[Tag] = soup.find_all('a', class_='rsImg')
-        if images_raw:
-            for img_raw in images_raw:
-                if img_raw:
-                    img = self.__base_url + img_raw.get('href')
-                    image_urls.append(img)
-        if len(image_urls) >= 10:
-            return image_urls[:9]
-        return image_urls
+    def find_photos(self, soup: BeautifulSoup) -> list:
+        photos = []
+        main_div = soup.find('div', class_='articleContent_fefJj')
+        photo_divs = main_div.find_all('div', 'imageWrapper_nZVrb')
+        for photo_div in photo_divs:
+            if photo_div:
+                photo = photo_div.find('img', class_='image_nZVrb').get('src')
+                photos.append(photo)
+        return photos
 
 
 def find_value(value: str, example: str) -> bool:
@@ -110,7 +104,7 @@ def find_value(value: str, example: str) -> bool:
 
 
 async def test() -> None:
-    parser = KaliningradParser()
+    parser = KrasnoyarskParser()
     urls = await parser.find_news_urls()
     # print(urls)
     print(await parser.get_news(urls))

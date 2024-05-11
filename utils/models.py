@@ -57,6 +57,14 @@ class SiteModel(StrEnum):
     MINSK = auto()
     OMSK = auto()
     SANKT_PETERBURG = auto()
+    NOVOSIBIRSK = auto()
+    SAMARKAND = auto()
+    KRASNOYARSK = auto()
+    SEVASTOPOL = auto()
+    KOSTANAI = auto()
+    PENZA = auto()
+    KIROV = auto()
+    TAGIL = auto()
 
 
 @dataclass
