@@ -36,9 +36,6 @@ class BaseParser(ABC):
     def find_photos(self, soup: BeautifulSoup | dict) -> list[str] | list:
         raise NotImplementedError
 
-    def get_new_urls(self):
-        return self.find_news_urls()
-
     def get_new(self, soup: BeautifulSoup | dict, url: str) -> Post | None:
         try:
             self.title = self.find_title(soup)

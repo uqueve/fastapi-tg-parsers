@@ -2,7 +2,7 @@ import datetime
 
 from pymongo.cursor import Cursor
 from pymongo.database import Database
-from pymongo.results import InsertOneResult, UpdateResult
+from pymongo.results import DeleteResult, InsertOneResult, UpdateResult
 
 from utils.models import Post, SiteModel
 
@@ -85,7 +85,7 @@ class NewsRepository:
         collection = self.connection['news']
         return collection.find_one(filter={'oid': oid, 'posted': True})
 
-    def clear_not_posted_news_by_date(self, date: datetime.datetime):
+    def clear_not_posted_news_by_date(self, date: datetime.datetime) -> DeleteResult:
         collection = self.connection['news']
         return collection.delete_many(filter={'date': {'$lt': date}, 'posted': False})
 

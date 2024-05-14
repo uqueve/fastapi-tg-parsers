@@ -4,6 +4,7 @@ import random
 import re
 from dataclasses import dataclass
 
+from aiohttp import ClientSession
 from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
@@ -39,41 +40,43 @@ class AlmataParser(BaseParser, BaseRequest):
         if max_news:
             self.max_news = max_news
         news = []
-        for url in urls:
-            if len(news) >= self.max_news:
-                return news
-            json_url = (
-                f'https://www.inalmaty.kz/api3/news/{url}'
-                f'?expand=url,title,friendlyPublishDate,sourceReliability,label,isCommercial,isAgeLimited,'
-                f'isIndexingForbidden,commentsCount,keywordsWithLinks,internalPoster,parsedContent,ratingsInfo,'
-                f'allowShowCommentsList,allowComment,actualSpecialThemes,author.realName,author.publicName,'
-                f'author.publicPost,author.authorUrl,author.avatarUrl,poll.question,poll.url,poll.votesCount,'
-                f'poll.userVote,poll.canUserVote,poll.isActive,poll.answers.answer,poll.answers.votesCount,'
-                f'commentsPreview.userName,commentsPreview.isAnonymous,commentsPreview.isModerated,'
-                f'commentsPreview.likesCount,commentsPreview.dislikesCount,commentsPreview.content,'
-                f'commentsPreview.friendlyPublishDate,commentsPreview.avatarUrl,commentsPreview.isUserLiked,'
-                f'commentsPreview.isUserDisliked,publishedI18nData.slug'
-            )
-            soup = await self.get_json(
-                url=json_url,
-                json=True,
-                headers=headers,
-                referer=self.referer,
-            )
-            new = self.get_new(
-                soup,
-                url=json_url,
-            )
-            if not new:
-                continue
-            await asyncio.sleep(random.randrange(3, 5))
-            news.append(new)
+        async with self.session:
+            for url in urls:
+                if len(news) >= self.max_news:
+                    return news
+                json_url = (
+                    f'https://www.inalmaty.kz/api3/news/{url}'
+                    f'?expand=url,title,friendlyPublishDate,sourceReliability,label,isCommercial,isAgeLimited,'
+                    f'isIndexingForbidden,commentsCount,keywordsWithLinks,internalPoster,parsedContent,ratingsInfo,'
+                    f'allowShowCommentsList,allowComment,actualSpecialThemes,author.realName,author.publicName,'
+                    f'author.publicPost,author.authorUrl,author.avatarUrl,poll.question,poll.url,poll.votesCount,'
+                    f'poll.userVote,poll.canUserVote,poll.isActive,poll.answers.answer,poll.answers.votesCount,'
+                    f'commentsPreview.userName,commentsPreview.isAnonymous,commentsPreview.isModerated,'
+                    f'commentsPreview.likesCount,commentsPreview.dislikesCount,commentsPreview.content,'
+                    f'commentsPreview.friendlyPublishDate,commentsPreview.avatarUrl,commentsPreview.isUserLiked,'
+                    f'commentsPreview.isUserDisliked,publishedI18nData.slug'
+                )
+                soup = await self.get_json(
+                    url=json_url,
+                    json=True,
+                    headers=headers,
+                    referer=self.referer,
+                )
+                new = self.get_new(
+                    soup,
+                    url=json_url,
+                )
+                if not new:
+                    continue
+                await asyncio.sleep(random.randrange(3, 5))
+                news.append(new)
         return news
 
     async def find_news_urls(self, max_news: int = 3) -> list[str]:
+        self.session: ClientSession = self.create_session(headers=headers)
         urls = []
         url = self.__news_url
-        soup = await self.get_soup(url=url, headers=headers)
+        soup = await self.get_soup(url=url, headers=headers, session=self.session)
         main_articles = soup.find('div', class_='col-12 col-md-8 col-lg-9')
         articles_block = main_articles.find_all(
             'a',
@@ -108,6 +111,7 @@ class AlmataParser(BaseParser, BaseRequest):
                     print(ex)
                     continue
         if not urls:
+            await self.session.close()
             raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         return urls
 

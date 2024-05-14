@@ -99,4 +99,5 @@ select = [
     "RUF028",
     "RUF029",
 ]
+ignore = ["TCH002", "PLR0913"]
 extend-select = ["E501"]

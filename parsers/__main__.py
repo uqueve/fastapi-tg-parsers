@@ -117,7 +117,7 @@ async def post_news() -> None:
     logging.info(f'Новостей отправлено по каналам за цикл: {s}')
 
 
-def clear_old_news():
+def clear_old_news() -> None:
     date_delta = datetime.datetime.now() - datetime.timedelta(days=4)
     try:
         mongo.clear_not_posted_news_by_date(date=date_delta)

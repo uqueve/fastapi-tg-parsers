@@ -3,7 +3,7 @@ from collections import OrderedDict
 from typing import Any
 
 import aiohttp
-from aiohttp import ClientTimeout
+from aiohttp import ClientSession, ClientTimeout
 from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class BaseRequest:
     name: str | None = None
-
+    session: ClientSession | None = None
     headers = OrderedDict(
         {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
@@ -33,17 +33,23 @@ class BaseRequest:
 
     proxies = []
 
-    def get_session(self):
-        ...
+    @staticmethod
+    def create_session(headers: dict | None = None, connect_timeout: int = 10, total_timeout: int = 15) -> ClientSession:
+        if headers is None:
+            headers = headers
+        timeout = ClientTimeout(connect=connect_timeout, total=total_timeout)
+        return ClientSession(headers=headers, timeout=timeout)
 
     async def get_soup(
         self,
+        session: ClientSession,
         url: str,
         headers: dict = None,
         cookies: dict = None,
         referer: str = None,
     ) -> BeautifulSoup:
         response = await self._make_async_request(
+            session,
             url,
             headers=headers,
             cookies=cookies,
@@ -54,6 +60,7 @@ class BaseRequest:
 
     async def get_json(
         self,
+        session: ClientSession,
         url: str,
         headers: dict = None,
         cookies: dict = None,
@@ -70,6 +77,7 @@ class BaseRequest:
 
     async def _make_async_request(
         self,
+        session: ClientSession,
         url: str,
         headers: dict = None,
         cookies: dict = None,
@@ -83,13 +91,7 @@ class BaseRequest:
         try:
             # answers = socket.getaddrinfo('grimaldis.myguestaccount.com', 443)
             # (family, type, proto, canonname, (address, port)) = answers[0]
-            timeout = ClientTimeout(total=10)
-            async with aiohttp.request(
-                method='GET',
-                url=url,
-                headers=headers,
-                timeout=timeout,
-            ) as response:
+            async with session.get(url=url) as response:
                 if response.status != 200:
                     logger.warning(
                         f'### {response.status}\t{self.name}\t{url}\nОтвет: {await response.text()}',
@@ -103,6 +105,26 @@ class BaseRequest:
                     return await response.text()
                 else:
                     return await response.json()
+            # timeout = ClientTimeout(total=10)
+            # async with aiohttp.request(
+            #     method='GET',
+            #     url=url,
+            #     headers=headers,
+            #     timeout=timeout,
+            # ) as response:
+            #     if response.status != 200:
+            #         logger.warning(
+            #             f'### {response.status}\t{self.name}\t{url}\nОтвет: {await response.text()}',
+            #         )
+            #         if self.proxies:
+            #             return await self.__make_async_request_with_proxies(
+            #                 url=url,
+            #                 json=json,
+            #             )
+            #     if not json:
+            #         return await response.text()
+            #     else:
+            #         return await response.json()
         except TimeoutError:
             max_retries = 3
             retries = 1
