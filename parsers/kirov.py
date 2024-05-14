@@ -31,7 +31,7 @@ headers = {
 
 @dataclass
 class KirovParser(BaseParser, BaseRequest):
-    city: SiteModel = SiteModel.IRKUTSK
+    city: SiteModel = SiteModel.KIROV
     name: str = 'kirov'
     __base_url: str = 'https://www.newsler.ru'
     __news_url: str = 'https://www.newsler.ru/news'

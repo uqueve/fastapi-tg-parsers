@@ -49,8 +49,8 @@ class BaseRequest:
         referer: str = None,
     ) -> BeautifulSoup:
         response = await self._make_async_request(
-            session,
-            url,
+            session=session,
+            url=url,
             headers=headers,
             cookies=cookies,
             referer=referer,
@@ -68,6 +68,7 @@ class BaseRequest:
         referer: str = None,
     ) -> dict:
         return await self._make_async_request(
+            session=session,
             url=url,
             headers=headers,
             cookies=cookies,
