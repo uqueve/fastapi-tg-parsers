@@ -10,7 +10,7 @@ import parsers
 from bot.main import send_news
 from database.mongo import mongo
 from parsers.models.base import BaseParser
-from utils.exceptions.parsers import ParserError
+from utils.exceptions.parsers import ParserNoUrlsError
 from utils.exceptions.post import PostValidateError
 from utils.exceptions.telegram import TelegramSendError
 from utils.models import CitySchema, Post, SiteModel
@@ -39,11 +39,15 @@ async def parse_news() -> None:
 
             if not parser_instance:
                 continue
+
             try:
                 urls: list = await parser_instance.find_news_urls()
-            except ParserError as error:
+            except ParserNoUrlsError as error:
                 logger.error(f'{error.message}')
                 continue
+
+            if not urls:
+                logger.error(f'Обработчик ParserNoUrlsError не сработал. {parser_instance.city}')
 
             final_urls = copy(urls)
             for url in urls:

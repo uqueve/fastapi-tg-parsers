@@ -33,6 +33,9 @@ class BaseRequest:
 
     proxies = []
 
+    def get_session(self):
+        ...
+
     async def get_soup(
         self,
         url: str,

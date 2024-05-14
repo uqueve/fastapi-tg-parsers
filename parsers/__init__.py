@@ -1,5 +1,4 @@
 from .aksai import AksaiParser
-from .kostanai import KostanaiParser
 from .almata import AlmataParser
 from .arhangelsk import ArhangelskParser
 from .astrahan import AstrahanParser
@@ -15,6 +14,7 @@ from .kaliningrad import KaliningradParser
 from .karakol import KarakolParser
 from .kirov import KirovParser
 from .kishinev import KishenevParser
+from .kostanai import KostanaiParser
 from .krasnodar import KrasnodarParser
 from .krasnoyarsk import KrasnoyarskParser
 from .magadan import MagadanParser

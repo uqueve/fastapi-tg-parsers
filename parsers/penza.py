@@ -107,7 +107,7 @@ class PenzaParser(BaseParser, BaseRequest):
             if not photo:
                 return image_urls
             if (photo_url := photo.get('src')) and not photo_url.startswith('http'):
-                photo_url = 'http' + photo_url
+                photo_url = 'https:' + photo_url
             image_urls.append(photo_url)
         return image_urls
 

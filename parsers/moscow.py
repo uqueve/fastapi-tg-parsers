@@ -85,7 +85,7 @@ class MoscowParser(BaseParser, BaseRequest):
         if scripts := photo_div.find_all('script', type='application/ld+json'):
             data = [json.loads(script.text) for script in scripts]
 
-        # TODO: WEBP > JPG ?
+            # TODO: WEBP > JPG ?
             if data:
                 photo = data[-1]['url']
                 image_urls.append(photo)

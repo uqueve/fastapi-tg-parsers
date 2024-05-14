@@ -10,11 +10,16 @@ from api.backend.news import news_router
 from database.mongo.prepare import prepare_database
 from parsers.__main__ import start_scheduler
 
-logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+
+def setup_logger():
+    logging.basicConfig(
+        level=logging.INFO, stream=sys.stdout, format='%(asctime)s - [%(levelname)s] - %(name)s - %(filename)s.%(funcName)s:%(lineno)d - %(message)s'
+    )
 
 
 @asynccontextmanager
 async def lifespan(app_obj: FastAPI):
+    setup_logger()
     # ruff: noqa
     prepare_database()
     await start_scheduler()

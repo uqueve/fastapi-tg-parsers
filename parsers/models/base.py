@@ -42,8 +42,6 @@ class BaseParser(ABC):
     def get_new(self, soup: BeautifulSoup | dict, url: str) -> Post | None:
         try:
             self.title = self.find_title(soup)
-        except AttributeError:
-            logger.exception(f'TITLE ERROR. Парсер: {self.name}. URL: {url}')
         except Exception:
             logger.exception(f'TITLE ERROR. Парсер: {self.name}. URL: {url}')
 

@@ -50,7 +50,6 @@ class ReportBakuParser(BaseParser, BaseRequest):
 
     def find_title(self, soup: BeautifulSoup) -> str | None:
         title = soup.find('h1', class_='news-title').text.replace('\xa0', ' ').strip()
-
         return title
 
     def find_body(self, soup: BeautifulSoup) -> str | None:

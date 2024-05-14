@@ -1,9 +1,6 @@
-import json
 from dataclasses import dataclass
 
 from bs4 import BeautifulSoup
-
-from utils.models import SiteModel
 
 
 @dataclass(eq=False)
@@ -22,5 +19,4 @@ class ParserNoUrlsError(ParserError):
 
     @property
     def message(self) -> str:
-        return (f'Не удалось спарсить ссылки на новости. '
-                f'Имя: {self.parser_name}. Город: {self.city}. Source: {self.source}')
+        return f'Не удалось спарсить ссылки на новости. Имя: {self.parser_name}. Город: {self.city}. Source: {self.source}'

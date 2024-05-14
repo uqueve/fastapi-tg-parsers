@@ -71,6 +71,8 @@ class SorochinskParser(BaseParser, BaseRequest):
         div_photo = soup.find('img', attrs={'rel': 'image_src'})
         if div_photo:
             photo = self.__news_url + div_photo.get('src')
+            if not photo.startswith('https:'):
+                photo = self.__base_url + photo
             return [photo]
         else:
             div_photo = soup.find('div', attrs={'itemprop': 'articleBody'})
@@ -78,6 +80,8 @@ class SorochinskParser(BaseParser, BaseRequest):
                 photo_raw = div_photo.find('img')
                 if photo_raw:
                     photo = photo_raw.get('src')
+                    if not photo.startswith('https:'):
+                        photo = self.__base_url + photo
                     return [photo]
         return []
 
