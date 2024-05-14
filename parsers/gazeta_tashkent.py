@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
+from utils.exceptions.parsers import ParserNoUrlsError
 from utils.models import Post, SiteModel
 
 
@@ -38,10 +39,13 @@ class TashkentParser(BaseParser, BaseRequest):
         soup = await self.get_soup(url=url)
         articles_block = soup.find('div', class_='newsblock-2')
         articles = articles_block.find_all('div', class_='nblock', limit=10)
-
+        if not articles:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         for article in articles:
             link = 'https://www.gazeta.uz' + article.find_next('a').get('href')
             urls.append(link)
+        if not urls:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         return urls
 
     def find_title(self, soup: BeautifulSoup) -> str | None:

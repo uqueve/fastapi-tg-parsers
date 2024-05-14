@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup, ResultSet, Tag
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
+from utils.exceptions.parsers import ParserNoUrlsError
 from utils.models import Post, SiteModel
 
 headers = {
@@ -56,12 +57,15 @@ class KaliningradParser(BaseParser, BaseRequest):
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers)
         news = soup.find_all('div', class_='catItemTitle')
-
+        if not news:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         for new in news:
             url = new.find('a')
             if url:
                 url = self.__base_url + url.get('href')
             urls.append(url)
+        if not urls:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         return urls
 
     def find_title(self, soup: BeautifulSoup) -> str | None:

@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
+from utils.exceptions.parsers import ParserNoUrlsError
 from utils.models import Post, SiteModel
 
 headers = {
@@ -59,7 +60,8 @@ class CherepovecParser(BaseParser, BaseRequest):
             class_='lenta-title',
             limit=self.max_news,
         )
-
+        if not articles_block:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         for article in articles_block:
             try:
                 link = article.get('href')
@@ -67,6 +69,8 @@ class CherepovecParser(BaseParser, BaseRequest):
             except Exception as ex:
                 print(ex)
                 continue
+        if not urls:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         return urls
 
     def find_title(self, soup: BeautifulSoup) -> str | None:

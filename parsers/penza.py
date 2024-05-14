@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
+from utils.exceptions.parsers import ParserNoUrlsError
 from utils.models import Post, SiteModel
 
 headers = {
@@ -65,11 +66,14 @@ class PenzaParser(BaseParser, BaseRequest):
                 omega_photo = self.__base_url + omega_photo_raw
                 urls.append(omega_photo)
         other_news = soup.find_all('div', class_='gitem grid_8 alpha omega')
-        for new in other_news:
-            url = new.find('a')
-            if url:
-                url = self.__base_url + url.get('href')
-                urls.append(url)
+        if other_news:
+            for new in other_news:
+                url = new.find('a')
+                if url:
+                    url = self.__base_url + url.get('href')
+                    urls.append(url)
+        if not urls:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         return urls
 
     def find_title(self, soup: BeautifulSoup) -> str | None:

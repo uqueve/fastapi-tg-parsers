@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
+from utils.exceptions.parsers import ParserNoUrlsError
 from utils.models import Post, SiteModel
 
 headers = {
@@ -59,10 +60,13 @@ class UlanUdeParser(BaseParser, BaseRequest):
         )
         # second way to find tags, a more simple to understand
         # news = soup.find_all('div', class_=lambda value: find_value(value))
-
+        if not news:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         for new in news:
             url = self.__base_url + new.find_next('a').get('href')
             urls.append(url)
+        if not urls:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         return urls
 
     def find_title(self, soup: BeautifulSoup) -> str | None:

@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
+from utils.exceptions.parsers import ParserNoUrlsError
 from utils.models import Post, SiteModel
 
 headers = {
@@ -54,12 +55,17 @@ class RidderParser(BaseParser, BaseRequest):
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers)
         main_div = soup.find('div', attrs={'id': 'k2Container'})
+        if not main_div:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         articles = main_div.find_all('div', class_='col-md-3', limit=15)
-
+        if not articles:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         for article in articles:
             div = article.find_next('a')
             url = self.__base_url + div.get('href')
             urls.append(url)
+        if not urls:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         return urls
 
     def find_title(self, soup: BeautifulSoup) -> str | None:

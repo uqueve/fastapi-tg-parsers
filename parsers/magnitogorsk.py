@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
+from utils.exceptions.parsers import ParserNoUrlsError
 from utils.models import Post, SiteModel
 
 headers = {
@@ -58,12 +59,15 @@ class MagnitogorskParser(BaseParser, BaseRequest):
             'article',
             class_=lambda value: find_value(value, 'jeg_post jeg_pl_md_card'),
         )
-
+        if not news:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         for new in news:
             url = new.find('a')
             if url:
                 url = url.get('href')
             urls.append(url)
+        if not urls:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         return urls
 
     def find_title(self, soup: BeautifulSoup) -> str | None:

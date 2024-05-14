@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
+from utils.exceptions.parsers import ParserNoUrlsError
 from utils.models import Post, SiteModel
 
 headers = {
@@ -55,13 +56,19 @@ class SamaraParser(BaseParser, BaseRequest):
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers)
         div = soup.find('div', class_='b-paged-news__list')
+        if not div:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         items = div.find_all('div', class_='b-paged-news__item')
+        if not items:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         for item in items:
             url_raw = item.find('a')
             if not url_raw:
                 continue
             url = self.__base_url + url_raw.get('href')
             urls.append(url)
+        if not urls:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         return urls
 
     def find_title(self, soup: BeautifulSoup) -> str | None:

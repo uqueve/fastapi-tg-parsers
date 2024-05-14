@@ -32,8 +32,8 @@ async def get_all_news(
             description='##### Наименование города на русском с заглавной буквы. Пример: "Белгород", "Самара"',
         ),
     ] = None,
-    limit: Annotated[int | None, Query(title='Лимит')] = 3,
-    offset: Annotated[int | None, Query(title='Смещение')] = 0,
+    limit: Annotated[int | None, Query(description='Лимит')] = 3,
+    offset: Annotated[int | None, Query(description='Смещение')] = 0,
 ):
     try:
         news = get_unread_news(city=city, limit=limit, offset=offset)

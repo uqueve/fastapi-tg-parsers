@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
+from utils.exceptions.parsers import ParserNoUrlsError
 from utils.models import Post, SiteModel
 
 headers = {
@@ -50,13 +51,16 @@ class VladivostokParser(BaseParser, BaseRequest):
             news.append(new)
         return news
 
-    @property
     async def find_news_urls(self) -> list[str]:
         urls = []
         url = self.__news_url
         json_obj = await self.get_json(url=url, headers=headers)
+        if not json_obj.get('items'):
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=json_obj)
         for new in json_obj['items']:
             urls.append(new['url'])
+        if not urls:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=json_obj)
         return urls
 
     def find_title(self, soup: BeautifulSoup) -> str | None:
@@ -95,7 +99,7 @@ def find_value(value: str, example: str) -> bool:
 
 async def test() -> None:
     parser = VladivostokParser()
-    urls = await parser.find_news_urls
+    urls = await parser.find_news_urls()
     # print(urls)
     print(await parser.get_news(urls))
 

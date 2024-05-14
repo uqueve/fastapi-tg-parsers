@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
+from utils.exceptions.parsers import ParserNoUrlsError
 from utils.models import Post, SiteModel
 
 headers = {
@@ -54,8 +55,12 @@ class SanktPiterParser(BaseParser, BaseRequest):
         urls = []
         url = self.__news_url
         json_obj = await self.get_json(url=url, headers=headers)
+        if not json_obj.get('items'):
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=json_obj)
         for new in json_obj['items']:
             urls.append(new['url'])
+        if not urls:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=json_obj)
         return urls
 
     def find_title(self, soup: BeautifulSoup) -> str | None:

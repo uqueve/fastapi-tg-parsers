@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
+from utils.exceptions.parsers import ParserNoUrlsError
 from utils.models import Post, SiteModel
 
 headers = {
@@ -53,11 +54,17 @@ class UralwebEkatParser(BaseParser, BaseRequest):
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers)
         main_div = soup.find('div', class_='news-box')
+        if not main_div:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         articles = main_div.find_all('li', class_='clearfix', limit=10)
+        if not articles:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         for article in articles:
             url_raw = article.find_next('div', class_='ln-ann').find('a').get('href').replace('#comments', '')
             url = 'https://www.uralweb.ru' + url_raw
             urls.append(url)
+        if not urls:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         return urls
 
     def find_title(self, soup: BeautifulSoup) -> str | None:

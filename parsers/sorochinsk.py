@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
+from utils.exceptions.parsers import ParserNoUrlsError
 from utils.models import Post, SiteModel
 
 
@@ -36,9 +37,13 @@ class SorochinskParser(BaseParser, BaseRequest):
         url = self.__news_url
         soup = await self.get_soup(url=url)
         items = soup.find_all('a', class_='new-title font-bold font-times')
+        if not items:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         for item in items:
             url = self.__news_url + item.get('href')
             urls.append(url)
+        if not urls:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         return urls
 
     def find_title(self, soup: BeautifulSoup) -> str:

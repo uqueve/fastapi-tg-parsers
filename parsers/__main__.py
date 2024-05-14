@@ -10,6 +10,7 @@ import parsers
 from bot.main import send_news
 from database.mongo import mongo
 from parsers.models.base import BaseParser
+from utils.exceptions.parsers import ParserError
 from utils.exceptions.post import PostValidateError
 from utils.exceptions.telegram import TelegramSendError
 from utils.models import CitySchema, Post, SiteModel
@@ -27,6 +28,8 @@ async def start_scheduler() -> None:
 
 async def parse_news() -> None:
     n = 0
+    not_found_urls_cities = []
+    not_found_news_cities = []
     for _parser_class_str, parser_class in inspect.getmembers(
         parsers,
         predicate=inspect.isclass,
@@ -36,21 +39,30 @@ async def parse_news() -> None:
 
             if not parser_instance:
                 continue
+            try:
+                urls: list = await parser_instance.find_news_urls()
+            except ParserError as error:
+                logger.error(f'{error.message}')
+                continue
 
-            urls: list = await parser_instance.find_news_urls()
             final_urls = copy(urls)
             for url in urls:
                 if mongo.is_news_exists_by_link(link=url) is True:
                     final_urls.remove(url)
 
             if not final_urls:
-                logger.warning(f'Нет новостей в городе {parser_instance.city!s}')
+                logger.warning(f'Нет новых новостей в городе {parser_instance.city!s}')
+                not_found_urls_cities.append(parser_instance.city)
                 continue
 
             news_posts: list[Post] = await parser_instance.get_news(
                 final_urls,
                 max_news=3,
             )
+            if not news_posts:
+                logger.warning(f'Не собрались новости в городе {parser_instance.city!s}')
+                not_found_news_cities.append(parser_instance.city)
+                continue
 
             for post in news_posts:
                 if mongo.is_news_exists_by_title(title=post.title) is True:
@@ -71,9 +83,11 @@ async def parse_news() -> None:
                 mongo.add_one_news(post=post)
                 n += 1
         except Exception:
-            logger.exception('Error with parsing posts')
+            logger.exception(f'Error with parsing posts. Parser instance: {parser_instance}')
             continue
-    logging.info(f'Новостей добавлено за цикл парсинга: {n}')
+    logger.info(f'Новостей добавлено за цикл парсинга: {n}')
+    logger.warning(f'Список городов для которых не собрались ссылки:\n{not_found_urls_cities}')
+    logger.warning(f'Список городов для которых не собрались новости:\n{not_found_news_cities}')
 
 
 async def post_news() -> None:

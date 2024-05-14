@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
+from utils.exceptions.parsers import ParserNoUrlsError
 from utils.models import Post, SiteModel
 
 headers = {
@@ -55,10 +56,16 @@ class NovokuznetskParser(BaseParser, BaseRequest):
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers)
         div = soup.find('div', class_='grid grid-cols-1 md:grid-cols-2 gap-6')
+        if not div:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         news = div.find_all('a')
+        if not news:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         for new in news:
             url = self.__base_url + new.get('href')
             urls.append(url)
+        if not urls:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         return urls
 
     def find_title(self, soup: BeautifulSoup) -> str | None:

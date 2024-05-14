@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
+from utils.exceptions.parsers import ParserNoUrlsError
 from utils.models import Post, SiteModel
 
 headers = {
@@ -59,6 +60,8 @@ class ChelyabinskParser(BaseParser, BaseRequest):
             'div',
             class_=lambda value: find_value(value, 'list-item'),
         )
+        if not items:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         for item in items:
             url_raw = item.find_next('a')
             if not url_raw:
@@ -67,6 +70,8 @@ class ChelyabinskParser(BaseParser, BaseRequest):
             if not url.startswith('https:'):
                 url = self.__base_url + url
             urls.append(url)
+        if not urls:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         return urls
 
     def find_title(self, soup: BeautifulSoup) -> str:

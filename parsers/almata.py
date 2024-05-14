@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
+from utils.exceptions.parsers import ParserNoUrlsError
 from utils.models import Post, SiteModel
 
 headers = {
@@ -84,27 +85,30 @@ class AlmataParser(BaseParser, BaseRequest):
             class_='c-news-card__title',
             limit=max_news // 2,
         )
-        for article in articles_block:
-            try:
-                link_raw = article.get('href')
-                found_link_patterns = re.findall(r'\d+', link_raw)
-                if found_link_patterns:
-                    link = found_link_patterns[0]
-                    urls.append(link)
-            except Exception as ex:
-                print(ex)
-                continue
-
-        for article in articles_title:
-            try:
-                link_raw = article.get('href')
-                found_link_patterns = re.findall(r'\d+', link_raw)
-                if found_link_patterns:
-                    link = found_link_patterns[0]
-                    urls.append(link)
-            except Exception as ex:
-                print(ex)
-                continue
+        if articles_block:
+            for article in articles_block:
+                try:
+                    link_raw = article.get('href')
+                    found_link_patterns = re.findall(r'\d+', link_raw)
+                    if found_link_patterns:
+                        link = found_link_patterns[0]
+                        urls.append(link)
+                except Exception as ex:
+                    print(ex)
+                    continue
+        if articles_title:
+            for article in articles_title:
+                try:
+                    link_raw = article.get('href')
+                    found_link_patterns = re.findall(r'\d+', link_raw)
+                    if found_link_patterns:
+                        link = found_link_patterns[0]
+                        urls.append(link)
+                except Exception as ex:
+                    print(ex)
+                    continue
+        if not urls:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         return urls
 
     def find_photos(self, json_resp: dict) -> list[str]:

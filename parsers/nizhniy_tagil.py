@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
+from utils.exceptions.parsers import ParserNoUrlsError
 from utils.models import Post, SiteModel
 
 headers = {
@@ -56,12 +57,17 @@ class TagilParser(BaseParser, BaseRequest):
         soup = await self.get_soup(url=url, headers=headers)
 
         main_div = soup.find('div', attrs={'id': 'itemListSecondary'})
+        if not main_div:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         news_divs = main_div.find_all('div', class_='itemContainer')
-
+        if not news_divs:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         for new_div in news_divs:
             new_raw = new_div.find('a')
             if new_raw and (url := new_raw.get('href')):
                 urls.append(self.__base_url + url)
+        if not urls:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         return urls
 
     def find_title(self, soup: BeautifulSoup) -> str | None:

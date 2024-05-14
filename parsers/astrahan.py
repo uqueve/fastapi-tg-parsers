@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
+from utils.exceptions.parsers import ParserNoUrlsError
 from utils.models import Post, SiteModel
 
 headers = {
@@ -56,9 +57,13 @@ class AstrahanParser(BaseParser, BaseRequest):
         soup = await self.get_soup(url=url, headers=headers)
         today_news_block = soup.find('ul', class_='news-listing__day-list')
         news = today_news_block.find_all('a', class_='news-listing__item-link')
+        if not news:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         for new in news:
             url = new.get('href')
             urls.append(url)
+        if not urls:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         return urls
 
     def find_title(self, soup: BeautifulSoup) -> str | None:

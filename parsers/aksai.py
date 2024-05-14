@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
+from utils.exceptions.parsers import ParserNoUrlsError
 from utils.models import Post, SiteModel
 
 headers = {
@@ -57,12 +58,16 @@ class AksaiParser(BaseParser, BaseRequest):
         soup = await self.get_soup(url=url, headers=headers)
         main_block = soup.find('div', class_='feed-news')
         news = main_block.find_all('h2')
-
+        if not news:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         for new in news:
             url = new.find('a')
             if url:
                 url = url.get('href')
             urls.append(url)
+
+        if not urls:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         return urls
 
     def find_title(self, soup: BeautifulSoup) -> str | None:
@@ -91,6 +96,8 @@ class AksaiParser(BaseParser, BaseRequest):
     def find_photos(self, soup: BeautifulSoup) -> list[str] | list:
         image_urls = []
         images_raw = soup.find_all('a', class_='highslide-image')
+        if not images_raw:
+            return image_urls
         for image in images_raw:
             if image:
                 photo = image.get('href')

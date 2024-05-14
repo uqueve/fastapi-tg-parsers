@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
+from utils.exceptions.parsers import ParserNoUrlsError
 from utils.models import Post, SiteModel
 
 
@@ -37,10 +38,14 @@ class ReportBakuParser(BaseParser, BaseRequest):
         urls = []
         url = self.__news_url
         json_obj = await self.get_json(url=url, json=True)
+        if not json_obj.get('posts'):
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=json_obj)
         articles = json_obj['posts']
         for article in articles[:10]:
             link = self.__base_url + article['url']
             urls.append(link)
+        if not urls:
+            raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=json_obj)
         return urls
 
     def find_title(self, soup: BeautifulSoup) -> str | None:
