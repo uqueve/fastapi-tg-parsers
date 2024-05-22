@@ -36,6 +36,7 @@ class VladivostokParser(BaseParser, BaseRequest):
     __base_url: str = 'https://ria.ru'
     __news_url: str = 'https://ria.ru/amp/location_Vladivostok/more.json'
     referer: str = 'https://ria.ru/amp/location_Vladivostok/'
+    # TODO: No news. Last news 9 maya
 
     async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
         if max_news:

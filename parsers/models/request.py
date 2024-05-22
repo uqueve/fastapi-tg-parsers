@@ -85,10 +85,6 @@ class BaseRequest:
         json: bool = False,
         referer: str = None,
     ) -> Any:
-        if not headers:
-            headers = self.headers
-            if referer:
-                headers['referer'] = referer
         try:
             # answers = socket.getaddrinfo('grimaldis.myguestaccount.com', 443)
             # (family, type, proto, canonname, (address, port)) = answers[0]
@@ -106,26 +102,6 @@ class BaseRequest:
                     return await response.text()
                 else:
                     return await response.json()
-            # timeout = ClientTimeout(total=10)
-            # async with aiohttp.request(
-            #     method='GET',
-            #     url=url,
-            #     headers=headers,
-            #     timeout=timeout,
-            # ) as response:
-            #     if response.status != 200:
-            #         logger.warning(
-            #             f'### {response.status}\t{self.name}\t{url}\nОтвет: {await response.text()}',
-            #         )
-            #         if self.proxies:
-            #             return await self.__make_async_request_with_proxies(
-            #                 url=url,
-            #                 json=json,
-            #             )
-            #     if not json:
-            #         return await response.text()
-            #     else:
-            #         return await response.json()
         except TimeoutError:
             max_retries = 3
             retries = 1
@@ -135,16 +111,15 @@ class BaseRequest:
                     f'TimeoutError. Ещё одна попытка запроса: {retries}... Парсер: {self.name}. Url: {url}',
                 )
                 response = await self._retry_async_request(
+                    session=session,
                     url=url,
-                    headers=headers,
                     json=json,
-                    referer=referer,
                 )
                 if response:
                     return response
                 retries += 1
             logger.warning(
-                f'Попытки закончились, не могу подключиться. Парсер: {self.name}. URL={url}\nЗаголовки: {headers}',
+                f'Попытки закончились, не могу подключиться. Парсер: {self.name}. URL={url}',
             )
             return None
 
@@ -155,23 +130,12 @@ class BaseRequest:
 
     async def _retry_async_request(
         self,
+        session: ClientSession,
         url: str,
-        headers: dict = None,
         json: bool = False,
-        referer: str = None,
     ) -> Any:
-        if not headers:
-            headers = self.headers
-            if referer:
-                headers['referer'] = referer
         try:
-            timeout = ClientTimeout(total=6)
-            async with aiohttp.request(
-                method='GET',
-                url=url,
-                headers=headers,
-                timeout=timeout,
-            ) as response:
+            async with session.get(url=url) as response:
                 if response.status != 200:
                     if self.proxies:
                         return await self.__make_async_request_with_proxies(

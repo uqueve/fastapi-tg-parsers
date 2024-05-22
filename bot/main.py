@@ -24,13 +24,13 @@ async def send_news(post: Post, channel_tg_id: int, mongo: NewsRepository) -> No
     image_link = media_chunks.get_link()
 
     caption = chunks_to_text(chunks)
+    corrected_length_caption = correct_caption_len(caption=caption, city=post.city.ru)
 
     chat_id = channel_tg_id
 
     if media is not None:
-        if len(caption) < CAPTION_LENGTH:
-            print(1)
-            media[0]['caption'] = caption
+        if len(corrected_length_caption) < CAPTION_LENGTH:
+            media[0]['caption'] = corrected_length_caption
             media[0]['parse_mode'] = 'HTML'
             try:
                 await send_media_group(channel_id=chat_id, media=media, post=post)
@@ -39,18 +39,20 @@ async def send_news(post: Post, channel_tg_id: int, mongo: NewsRepository) -> No
                 logger.error(f'{error.message}')
 
         else:
-            caption = correct_caption_len(caption)
-            caption += f'<a href="{image_link}">&#160</a>'
+            caption_with_embedded_image = corrected_length_caption + f'<a href="{image_link}">&#160</a>'
             try:
-                await send_message(text=caption, channel_id=chat_id, post=post)
+                await send_message(text=caption_with_embedded_image, channel_id=chat_id, post=post)
             except TelegramSendMessageError as error:
                 # ruff: noqa:TRY400
                 logger.error(f'{error.message}')
+                try:
+                    logger.info('Пробую отправить без встроенного изображения')
+                    await send_message(channel_id=channel_tg_id, text=corrected_length_caption, post=post)
+                except TelegramSendMessageError:
+                    logger.error(f'{error.message}')
     else:
-        if len(caption) >= CAPTION_LENGTH:
-            caption = correct_caption_len(caption)
         try:
-            await send_message(channel_id=channel_tg_id, text=caption, post=post)
+            await send_message(channel_id=channel_tg_id, text=corrected_length_caption, post=post)
         except TelegramSendMessageError as error:
             # ruff: noqa:TRY400
             logger.error(f'{error.message}')

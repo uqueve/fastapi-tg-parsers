@@ -27,6 +27,7 @@ async def start_scheduler() -> None:
 
 
 n = 0
+not_found_new_urls_cities = []
 not_found_urls_cities = []
 not_found_news_cities = []
 
@@ -57,8 +58,9 @@ async def parse_news() -> None:
         await add_news_to_database(news_posts=posts)
 
     logger.info(f'Новостей добавлено за цикл парсинга: {n}')
-    logger.info(f'Список городов для которых не собрались ссылки:\n{not_found_urls_cities}')
-    logger.warning(f'Список городов для которых не собрались новости:\n{not_found_news_cities}')
+    logger.info(f'Список городов для которых нет новых ссылок:\n{not_found_new_urls_cities}')
+    logger.warning(f'Список городов для которых не собрались ссылки:\n{not_found_urls_cities}')
+    logger.warning(f'Список городов для которых не собрались новости по имеющимся ссылкам:\n{not_found_news_cities}')
     n = 0
     not_found_news_cities.clear()
     not_found_urls_cities.clear()
@@ -66,6 +68,7 @@ async def parse_news() -> None:
 
 async def find_urls_for_news(parser_instance: BaseParser) -> list | None:
     global not_found_urls_cities
+    global not_found_new_urls_cities
 
     if not parser_instance:
         return None
@@ -73,6 +76,7 @@ async def find_urls_for_news(parser_instance: BaseParser) -> list | None:
     try:
         urls: list = await parser_instance.find_news_urls()
     except ParserNoUrlsError as error:
+        not_found_urls_cities.append(str(parser_instance.city))
         logger.error(f'{error.message}')
         return None
 
@@ -83,7 +87,7 @@ async def find_urls_for_news(parser_instance: BaseParser) -> list | None:
 
     if not final_urls:
         logger.debug(f'Нет новых новостей в городе {parser_instance.city!s}')
-        not_found_urls_cities.append(parser_instance.city)
+        not_found_new_urls_cities.append(str(parser_instance.city))
     return final_urls
 
 
@@ -95,7 +99,7 @@ async def parsing_news(parser_instance: BaseParser, urls: list) -> list[Post] | 
     )
     if not news_posts:
         logger.warning(f'Не собрались новости по имеющимся ссылкам в городе {parser_instance.city!s}')
-        not_found_news_cities.append(parser_instance.city)
+        not_found_news_cities.append(str(parser_instance.city))
         return None
     return news_posts
 
@@ -106,11 +110,14 @@ async def add_news_to_database(news_posts: list[Post]) -> None:
     for post in news_posts:
         if mongo.is_news_exists_by_title(title=post.title) is True:
             continue
-
-        city_data = mongo.get_city_data_by_city(city=str(post.city.name))
-
+        try:
+            city_data = mongo.get_city_data_by_city(city=str(post.parser_name))
+        except AttributeError:
+            logger.warning(f'AttributeError. add_news_to_database Пост: {post}')
+            continue
+            
         if not city_data:
-            logger.critical(f'Нет данных по городу {post.city.ru} - {post.city.name}. Новости не постятся.')
+            logger.critical(f'Нет данных по городу {post.parser_name}. Новости не постятся.')
             continue
         # noinspection PyArgumentList #
         post.city = CitySchema(

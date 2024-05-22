@@ -64,7 +64,7 @@ class BaseParser(ABC):
             image_links=self.image_links,
             date=self.date,
             link=url,
-            parser_name=self.name,
+            parser_name=str(self.city),
         )
 
     @abstractmethod

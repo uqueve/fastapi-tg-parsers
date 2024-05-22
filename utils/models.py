@@ -6,7 +6,8 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
-from utils.exceptions.post import PostNoBodyError, PostNoTitleError
+from utils.blacklist import blackword_in_news_validate
+from utils.exceptions.post import PostNoBodyError, PostNoTitleError, PostBlackWordInNewError
 from utils.openai_service import OpenAIService
 from utils.text_sevice import to_chunks
 
@@ -118,6 +119,12 @@ class Post(BaseModel):
             raise PostNoTitleError(link=self.link)
         if not self.body:
             raise PostNoBodyError(link=self.link)
+        validate_blacklist_answer = blackword_in_news_validate(self.title)
+        if not validate_blacklist_answer['ok']:
+            raise PostBlackWordInNewError(word=validate_blacklist_answer['word'], link=self.link)
+        validate_blacklist_answer = blackword_in_news_validate(self.body)
+        if not validate_blacklist_answer['ok']:
+            raise PostBlackWordInNewError(word=validate_blacklist_answer['word'], link=self.link)
 
     def get_text(self) -> str:
         result = f'{self.title}\n\n{self.body}'

@@ -57,6 +57,7 @@ class AlmataParser(BaseParser, BaseRequest):
                     f'commentsPreview.isUserDisliked,publishedI18nData.slug'
                 )
                 soup = await self.get_json(
+                    session=self.session,
                     url=json_url,
                     json=True,
                     headers=headers,
