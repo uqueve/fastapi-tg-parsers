@@ -41,11 +41,23 @@ from parsers.uralweb_ekat import UralwebEkatParser
 from parsers.vladimir import VladimirParser
 from parsers.vladivostok import VladivostokParser
 from parsers.volgograd import VolgogradParser
+from parsers.ashhabad import AshhabadParser
+from parsers.baranovichi import BaranovichiParser
+from parsers.brest import BrestParser
+from parsers.kineshma import KineshmaParser
+from parsers.orenburg import OrenburgParser
+from parsers.shimkent import ShimkentParser
 from utils.models import SiteModel
 
 
 def get_parser_objects() -> dict[SiteModel, BaseParser]:
     get_parser_object = {
+        SiteModel.ASHHABAD: AshhabadParser(),
+        SiteModel.BARANOVICHI: BaranovichiParser(),
+        SiteModel.BREST: BrestParser(),
+        SiteModel.KINESHMA: KineshmaParser(),
+        SiteModel.ORENBURG: OrenburgParser(),
+        SiteModel.SHIMKENT: ShimkentParser(),
         SiteModel.DNEPROPETROVSK: DnepropetrovskParser(),
         SiteModel.KARAKOL: KarakolParser(),
         SiteModel.KALININGRAD: KaliningradParser(),

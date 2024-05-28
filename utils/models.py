@@ -67,6 +67,13 @@ class SiteModel(StrEnum):
     KIROV = auto()
     TAGIL = auto()
 
+    ASHHABAD = auto()
+    KINESHMA = auto()
+    BREST = auto()
+    BARANOVICHI = auto()
+    SHIMKENT = auto()
+    ORENBURG = auto()
+
 
 @dataclass
 class CitySchema:

@@ -310,4 +310,34 @@ cities = [
         'ru': 'Севастополь',
         'oid': '50',
     },
+    {
+        'city': SiteModel.ASHHABAD,
+        'channel_tg_id': -1002014851524,
+        'ru': 'Ашхабад',
+        'oid': '51',
+    },
+    {
+        'city': SiteModel.BARANOVICHI,
+        'channel_tg_id': -1002111398446,
+        'ru': 'Барановичи',
+        'oid': '52',
+    },
+    {
+        'city': SiteModel.BREST,
+        'channel_tg_id': -1002022929241,
+        'ru': 'Брест',
+        'oid': '53',
+    },
+    {
+        'city': SiteModel.KINESHMA,
+        'channel_tg_id': -1002072172563,
+        'ru': 'Кинешма',
+        'oid': '54',
+    },
+    {
+        'city': SiteModel.SHIMKENT,
+        'channel_tg_id': -1002069112345,
+        'ru': 'Шымкент',
+        'oid': '55',
+    },
 ]
