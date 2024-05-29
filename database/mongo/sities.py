@@ -1,4 +1,4 @@
-from utils.models import SiteModel
+from parsers.models.cities import SiteModel
 
 # cities = [
 #     {'city': SiteModel.URALSK, 'channel_tg_id': -1002014480454, 'ru': 'Уральск', 'oid': '1'},
