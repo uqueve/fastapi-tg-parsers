@@ -18,6 +18,7 @@ from parsers.magadan import MagadanParser
 from parsers.magnitogorsk import MagnitogorskParser
 from parsers.minsk import MinskParser
 from parsers.models.base import BaseParser
+from parsers.models.cities import SiteModel
 from parsers.moscow import MoscowParser
 from parsers.murmansk import MurmanskParser
 from parsers.narin import NarinParser
@@ -47,7 +48,6 @@ from parsers.brest import BrestParser
 from parsers.kineshma import KineshmaParser
 from parsers.orenburg import OrenburgParser
 from parsers.shimkent import ShimkentParser
-from utils.models import SiteModel
 
 
 def get_parser_objects() -> dict[SiteModel, BaseParser]:

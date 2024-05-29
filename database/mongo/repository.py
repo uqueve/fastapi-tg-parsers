@@ -4,7 +4,8 @@ from pymongo.cursor import Cursor
 from pymongo.database import Database
 from pymongo.results import DeleteResult, InsertOneResult, UpdateResult
 
-from utils.models import Post, SiteModel
+from parsers.models.cities import SiteModel
+from parsers.models.posts import Post
 
 
 class NewsRepository:

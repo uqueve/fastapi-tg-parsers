@@ -5,7 +5,8 @@ from datetime import datetime
 
 from bs4 import BeautifulSoup
 
-from utils.models import Post, SiteModel
+from parsers.models.cities import SiteModel
+from parsers.models.posts import Post
 
 logger = logging.getLogger(__name__)
 

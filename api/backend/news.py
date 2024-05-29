@@ -5,8 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 
 from api.backend.auth import check_api_key
 from api.backend.controllers import get_news_by_oid, get_unread_news, set_news_read
+from api.backend.models import ErrorSchema, News
+from parsers.models.posts import PostOut
 from utils.exceptions.api import ApplicationError
-from utils.models import ErrorSchema, News, PostOut
 
 logger = logging.getLogger(__name__)
 news_router = APIRouter(tags=['News'])

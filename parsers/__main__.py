@@ -5,25 +5,29 @@ import logging
 from copy import copy
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.jobstores.mongodb import MongoDBJobStore
 
 import parsers
 from bot.main import send_news
 from database.mongo import mongo
 from parsers.models.base import BaseParser
+from parsers.models.cities import CitySchema, SiteModel
+from parsers.models.posts import Post
 from utils.exceptions.parsers import ParserNoUrlsError
 from utils.exceptions.post import PostValidateError
 from utils.exceptions.telegram import TelegramSendError
-from utils.models import CitySchema, Post, SiteModel
 
 logger = logging.getLogger(__name__)
 
 
-async def start_scheduler() -> None:
+async def start_scheduler() -> AsyncIOScheduler:
     scheduler = AsyncIOScheduler()
+    # scheduler.add_jobstore(jobstore=apscheduler.jobstores.base.BaseJobStore)
     scheduler.add_job(parse_news, 'interval', hours=3, name='Парсинг новостей')
-    scheduler.add_job(post_news, 'interval', hours=3, name='Постинг новостей')
+    scheduler.add_job(post_news, 'interval', hours=3, jitter=120, name='Постинг новостей')
     scheduler.add_job(clear_old_news, 'cron', day='*', hour=8, name='Очистка старых post: false новостей')
     scheduler.start()
+    return scheduler
 
 
 n = 0

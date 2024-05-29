@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from utils.models import Post
+from parsers.models.posts import Post
 
 
 @dataclass

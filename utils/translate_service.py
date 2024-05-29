@@ -2,7 +2,7 @@ import logging
 
 import requests
 
-from utils.models import Post
+from parsers.models.posts import Post
 
 
 def translate_text(texts: str, target_language: str = 'ru') -> str:

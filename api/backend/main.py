@@ -22,8 +22,9 @@ async def lifespan(app_obj: FastAPI):
     setup_logger()
     # ruff: noqa
     prepare_database()
-    await start_scheduler()
+    scheduler = await start_scheduler()
     yield
+    scheduler.shutdown(wait=True)
 
 
 def create_app() -> FastAPI:

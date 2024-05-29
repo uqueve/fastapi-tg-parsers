@@ -3,13 +3,14 @@ import logging
 
 import aiohttp
 
+from bot.models import CustomMediaChunks
 from database.mongo import NewsRepository, settings
+from parsers.models.posts import Post
 from utils.exceptions.telegram import (
     TelegramSendMediaGroupError,
     TelegramSendMessageError,
     TelegramSendPhotoError,
 )
-from utils.models import CustomMediaChunks, Post
 from utils.text_sevice import chunks_to_text, correct_caption_len
 
 logger = logging.getLogger(__name__)
