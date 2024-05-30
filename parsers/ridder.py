@@ -6,9 +6,10 @@ from aiohttp import ClientSession
 from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
+from parsers.models.cities import SiteModel
+from parsers.models.posts import Post
 from parsers.models.request import BaseRequest
 from utils.exceptions.parsers import ParserNoUrlsError
-from utils.models import Post, SiteModel
 
 headers = {
     'Accept': 'text/html, */*; q=0.01',

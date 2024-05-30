@@ -9,7 +9,8 @@ from bs4 import BeautifulSoup
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
 from utils.exceptions.parsers import ParserNoUrlsError
-from utils.models import Post, SiteModel
+from parsers.models.cities import SiteModel
+from parsers.models.posts import Post
 
 headers = {
     'AMP-Same-Origin': 'true',

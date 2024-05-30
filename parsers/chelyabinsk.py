@@ -8,7 +8,8 @@ from bs4 import BeautifulSoup
 from parsers.models.base import BaseParser
 from parsers.models.request import BaseRequest
 from utils.exceptions.parsers import ParserNoUrlsError
-from utils.models import Post, SiteModel
+from parsers.models.cities import SiteModel
+from parsers.models.posts import Post
 
 headers = {
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,'
