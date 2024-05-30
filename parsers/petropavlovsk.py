@@ -31,7 +31,7 @@ headers = {
 
 @dataclass
 class PetropavlovskParser(BaseParser, BaseRequest):
-    city: SiteModel = SiteModel.RIDDER
+    city: SiteModel = SiteModel.PETROPAVLOVSK
     name: str = 'petropavlovsk'
     __base_url = 'https://24.kz'
     __news_url = __base_url + '/ru/news/social/itemlist/tag/%D0%9F%D0%B5%D1%82%D1%80%D0%BE%D0%BF%D0%B0%D0%B2%D0%BB%D0%BE%D0%B2%D1%81%D0%BA'

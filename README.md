@@ -1,54 +1,41 @@
-```markdown
 # Telegram News Parser
 
 ![Telegram Logo](https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Telegram_logo.svg/240px-Telegram_logo.svg.png)
 
 ## Описание
 
-Этот проект представляет собой телеграмм бота для парсинга новостей с различных сайтов и отправки их в чат.
+Этот проект представляет собой Backend для сайта + телеграмм бота для парсинга новостей с различных сайтов и отправки их в региональные каналы.
 
 ## Структура проекта
 
-- **/handlers**: Роутеры телеграмм бота.
-- **/database**: Скрипты для работы с базой данных.
-- **/parsers**: Скрипты парсинга сайтов.
-- **/utils**: Сервисные функции.
+- **/api/backend**: Бэкенд на FastAPI для получения новостей.
+- **/bot**: Работа с телеграмм ботом.
+- **/database/mongo**: Работа с базой данных Mongo.
+- **/docker_compose**: Докерфайлы и yaml-файлы.
+- **/parsers**: Парсеры, модели и точка инициализации парсинга с постингом.
+- **/traefik**: Докерфайл и yaml с настройкой проксирования и шифрования запросов.
+- **/utils**: Сервисные функции, небольшие модули сторонних api, модели исключений.
 
 ## Установка и Запуск
 
-Проект можно запустить в Docker контейнере.
-
-### Зависимости
-
-Перед запуском убедитесь, что у вас установлен Docker.
-
-### Установка
-
-Сборка Docker образа:
-
+Проект можно запустить в Docker контейнере. 
+Запуск Traefik: 
 ```bash
-docker build -t cyprusnews /root/cyprusnews
+docker compose -f traefik/docker-compose.traefik.yml up --build -d
 ```
-
-### Запуск
-
-Запустите Docker контейнер:
-
+Запуск MongoDB: 
 ```bash
-docker run --restart always --name cyprusnews_container -d -v /root/cyprusnews:/cyprusnews cyprusnews
+make mongo
+```
+Запуск API: 
+```bash
+make app
 ```
 
 ## Конфигурация
 
-Файл окружения расположен в корневой директории проекта.
-
-Файл для работы с базой данных: `telegram-news-parser/database/db.py`.
-
-Конфигурация: `telegram-news-parser/config_data/config.py`.
-
-Прокси находятся в файле: `telegram-news-parser/parsers/base_parser.py`.
+Файл окружения должен быть заполнен в соответствии с .env.example.
 
 ## Лицензия
 
 Этот проект лицензирован в соответствии с лицензией [MIT](LICENSE).
-```

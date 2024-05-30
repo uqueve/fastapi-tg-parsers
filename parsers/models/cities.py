@@ -62,6 +62,10 @@ class SiteModel(StrEnum):
     SHIMKENT = auto()
     ORENBURG = auto()
 
+    PETROPAVLOVSK = auto()
+    USTKAMENOGORSK = auto()
+    KARAGANDA = auto()
+
 
 @dataclass
 class CitySchema:
