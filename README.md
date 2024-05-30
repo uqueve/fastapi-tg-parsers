@@ -1,5 +1,3 @@
-Конечно, вот пример красиво оформленного README.md:
-
 ```markdown
 # Telegram News Parser
 
