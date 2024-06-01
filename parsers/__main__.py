@@ -5,7 +5,6 @@ import logging
 from copy import copy
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.jobstores.mongodb import MongoDBJobStore
 
 import parsers
 from bot.main import send_news
@@ -22,7 +21,6 @@ logger = logging.getLogger(__name__)
 
 async def start_scheduler() -> AsyncIOScheduler:
     scheduler = AsyncIOScheduler()
-    # scheduler.add_jobstore(jobstore=apscheduler.jobstores.base.BaseJobStore)
     scheduler.add_job(parse_news, 'interval', hours=3, name='Парсинг новостей')
     scheduler.add_job(post_news, 'interval', hours=3, jitter=120, name='Постинг новостей')
     scheduler.add_job(clear_old_news, 'cron', day='*', hour=8, name='Очистка старых post: false новостей')
@@ -96,7 +94,6 @@ async def find_urls_for_news(parser_instance: BaseParser) -> list | None:
 
 
 async def parsing_news(parser_instance: BaseParser, urls: list) -> list[Post] | None:
-
     news_posts: list[Post] = await parser_instance.get_news(
         urls=urls,
         max_news=3,
@@ -119,7 +116,7 @@ async def add_news_to_database(news_posts: list[Post]) -> None:
         except AttributeError:
             logger.warning(f'AttributeError. add_news_to_database Пост: {post}')
             continue
-            
+
         if not city_data:
             logger.critical(f'Нет данных по городу {post.parser_name}. Новости не постятся.')
             continue
@@ -153,7 +150,7 @@ async def post_news() -> None:
                 )
                 s += 1
             else:
-                logger.debug( f'Не найдено неотправленных новостей в городе {city!s}')
+                logger.debug(f'Не найдено неотправленных новостей в городе {city!s}')
         except TelegramSendError as error:
             logging.exception(f'{error.message}')
         except Exception:

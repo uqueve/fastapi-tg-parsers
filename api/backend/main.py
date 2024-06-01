@@ -24,7 +24,7 @@ async def lifespan(app_obj: FastAPI):
     prepare_database()
     scheduler = await start_scheduler()
     yield
-    scheduler.shutdown(wait=True)
+    # scheduler.shutdown(wait=True)
 
 
 def create_app() -> FastAPI:

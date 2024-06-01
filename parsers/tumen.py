@@ -6,10 +6,10 @@ from aiohttp import ClientSession
 from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
-from parsers.models.request import BaseRequest
-from utils.exceptions.parsers import ParserNoUrlsError
 from parsers.models.cities import SiteModel
 from parsers.models.posts import Post
+from parsers.models.request import BaseRequest
+from utils.exceptions.parsers import ParserNoUrlsError
 
 headers = {
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -24,7 +24,7 @@ headers = {
     'sec-fetch-mode': 'navigate',
     'sec-fetch-site': 'none',
     'sec-fetch-user': '?1',
-    'sec-gpc': '1',
+    # 'sec-gpc': '1',
     'upgrade-insecure-requests': '1',
     'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
 }

@@ -1,5 +1,5 @@
 from database.mongo import connection
-from database.mongo.sities import cities
+from database.mongo.sities import get_actual_cities_json
 
 
 def prepare_database() -> None:
@@ -8,7 +8,10 @@ def prepare_database() -> None:
         connection.create_collection(name='news')
     if 'cities' not in colls:
         connection.create_collection(name='cities')
+
     collection = connection['cities']
+    cities = get_actual_cities_json()
+
     for city in cities:
         if not collection.find_one(filter={'name': str(city['city'])}):
             collection.insert_one(

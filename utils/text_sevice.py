@@ -3,7 +3,7 @@ def to_chunks(title: str, text: str, first_size: int = 1024, other_size: int = 4
     result = [title + text[: first_size - len(title)]]
 
     for i in range(first_size - len(title), len(text), other_size):
-        result.append(text[i: i + other_size])
+        result.append(text[i : i + other_size])
 
     return result
 
@@ -27,5 +27,5 @@ def correct_caption_len(caption: str, city: str) -> str:
     return caption + hashtag_text
 
 
-def rename_city_to_hashtag_form(city: str):
-    return city.replace(" ", "").replace("-", "")
+def rename_city_to_hashtag_form(city: str) -> str:
+    return city.replace(' ', '').replace('-', '')

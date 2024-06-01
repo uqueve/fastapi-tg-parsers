@@ -6,10 +6,10 @@ from aiohttp import ClientSession
 from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
-from parsers.models.request import BaseRequest
-from utils.exceptions.parsers import ParserNoUrlsError
 from parsers.models.cities import SiteModel
 from parsers.models.posts import Post
+from parsers.models.request import BaseRequest
+from utils.exceptions.parsers import ParserNoUrlsError
 
 headers = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -59,16 +59,19 @@ class PenzaParser(BaseParser, BaseRequest):
         urls = []
         url = self.__news_url
         soup = await self.get_soup(url=url, headers=headers, session=self.session)
+
         alpha_div = soup.find('div', class_='grid_4 alpha')
         if alpha_div and (alpha_img := alpha_div.find('a')):
             if alpha_photo_raw := alpha_img.get('href'):
                 alpha_photo = self.__base_url + alpha_photo_raw
                 urls.append(alpha_photo)
+
         omega_div = soup.find('div', class_='grid_4 omega')
         if omega_div and (omega_img := omega_div.find('a')):
             if omega_photo_raw := omega_img.get('href'):
                 omega_photo = self.__base_url + omega_photo_raw
                 urls.append(omega_photo)
+
         other_news = soup.find_all('div', class_='gitem grid_8 alpha omega')
         if other_news:
             for new in other_news:
@@ -76,6 +79,7 @@ class PenzaParser(BaseParser, BaseRequest):
                 if url:
                     url = self.__base_url + url.get('href')
                     urls.append(url)
+
         if not urls:
             await self.session.close()
             raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)

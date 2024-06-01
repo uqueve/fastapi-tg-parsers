@@ -4,7 +4,6 @@ from parsers.models.posts import Post
 from utils.openai_service import OpenAIService
 from utils.text_sevice import to_chunks
 
-
 logger = logging.getLogger(__name__)
 
 

@@ -33,10 +33,9 @@ class BaseRequest:
 
     proxies = []
 
-    @staticmethod
-    def create_session(headers: dict | None = None, connect_timeout: int = 10, total_timeout: int = 15) -> ClientSession:
+    def create_session(self, headers: dict | None = None, connect_timeout: int = 10, total_timeout: int = 15) -> ClientSession:
         if headers is None:
-            headers = headers
+            headers = self.headers
         timeout = ClientTimeout(connect=connect_timeout, total=total_timeout)
         return ClientSession(headers=headers, timeout=timeout)
 
@@ -51,9 +50,6 @@ class BaseRequest:
         response = await self._make_async_request(
             session=session,
             url=url,
-            headers=headers,
-            cookies=cookies,
-            referer=referer,
         )
         soup = BeautifulSoup(response, 'lxml')
         return soup
@@ -70,26 +66,18 @@ class BaseRequest:
         return await self._make_async_request(
             session=session,
             url=url,
-            headers=headers,
-            cookies=cookies,
             json=json,
-            referer=referer,
         )
 
     async def _make_async_request(
         self,
         session: ClientSession,
         url: str,
-        headers: dict = None,
-        cookies: dict = None,
         json: bool = False,
-        referer: str = None,
     ) -> Any:
         try:
-            # answers = socket.getaddrinfo('grimaldis.myguestaccount.com', 443)
-            # (family, type, proto, canonname, (address, port)) = answers[0]
             async with session.get(url=url) as response:
-                if response.status != 200:
+                if response.status not in [200, 304]:
                     logger.warning(
                         f'### {response.status}\t{self.name}\t{url}\nОтвет: {await response.text()}',
                     )
@@ -98,10 +86,10 @@ class BaseRequest:
                             url=url,
                             json=json,
                         )
-                if not json:
-                    return await response.text()
-                else:
+                if json:
                     return await response.json()
+                else:
+                    return await response.text()
         except TimeoutError:
             max_retries = 3
             retries = 1

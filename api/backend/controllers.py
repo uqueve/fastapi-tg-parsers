@@ -1,7 +1,7 @@
 import logging
 
 from database.mongo import mongo
-from parsers.models.posts import PostOut, Post
+from parsers.models.posts import Post, PostOut
 
 logger = logging.getLogger(__name__)
 
@@ -11,8 +11,6 @@ def get_unread_news(city: str | None, limit: int, offset: int) -> list[PostOut]:
     news = mongo.get_unread_news(city=city, limit=limit, offset=offset)
     for new in news:
         try:
-            # news_obj = Post(**new)
-            # post_out = post_postout_adapter(post=news_obj)
             post_out = raw_news_postout_adapter(new)
             news_list.append(post_out)
         except KeyError:
@@ -77,4 +75,3 @@ def get_news_by_oid(news_oid: str) -> PostOut | None:
         logger.exception('Problem with dump models when getting unread news')
         return None
     return post_out
-

@@ -6,10 +6,10 @@ from aiohttp import ClientSession
 from bs4 import BeautifulSoup, ResultSet, Tag
 
 from parsers.models.base import BaseParser
-from parsers.models.request import BaseRequest
-from utils.exceptions.parsers import ParserNoUrlsError
 from parsers.models.cities import SiteModel
 from parsers.models.posts import Post
+from parsers.models.request import BaseRequest
+from utils.exceptions.parsers import ParserNoUrlsError
 
 headers = {
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',

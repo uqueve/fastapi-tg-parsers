@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from enum import unique, StrEnum, auto
+from enum import StrEnum, auto, unique
 
 
 @unique
@@ -65,6 +65,22 @@ class SiteModel(StrEnum):
     PETROPAVLOVSK = auto()
     USTKAMENOGORSK = auto()
     KARAGANDA = auto()
+    TOLIATTI = auto()
+    KUTAISI = auto()
+    ZASTAPHONI = auto()
+    DUSHANBE = auto()
+    BISHKEK = auto()
+    SUHUMI = auto()
+    PERM = auto()
+    TULA = auto()
+    KRIM = auto()
+    VORONEZH = auto()
+    MAHACHKALA = auto()
+    YALTA = auto()
+    IVANOVO = auto()
+    TVER = auto()
+    UFA = auto()
+    HIMKI = auto()
 
 
 @dataclass

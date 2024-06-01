@@ -1,11 +1,11 @@
+import datetime as dt
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
-import datetime as dt
 
 from parsers.models.cities import CitySchema
 from utils.blacklist import blackword_in_news_validate
-from utils.exceptions.post import PostNoTitleError, PostNoBodyError, PostBlackWordInNewError
+from utils.exceptions.post import PostBlackWordInNewError, PostNoBodyError, PostNoTitleError
 
 
 class Post(BaseModel):
