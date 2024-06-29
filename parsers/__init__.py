@@ -3,6 +3,7 @@ from .almata import AlmataParser
 from .arhangelsk import ArhangelskParser
 from .astrahan import AstrahanParser
 from .belgorod import BelgorodParser
+from .brazil import RioParser, SalvadorParser, SanPauluParser
 from .bryansk import BryanskParser
 from .chelyabinsk import ChelyabinskParser
 from .cherepovec import CherepovecParser
@@ -49,7 +50,7 @@ from .vladimir import VladimirParser
 from .vladivostok import VladivostokParser
 from .volgograd import VolgogradParser
 
-__all__ = [
+__all__ = (
     'AksaiParser',
     'AlmataParser',
     'ArhangelskParser',
@@ -101,4 +102,7 @@ __all__ = [
     'PenzaParser',
     'SamarkandParser',
     'SevastopolParser',
-]
+    'SanPauluParser',
+    'SalvadorParser',
+    'RioParser'
+)

@@ -43,17 +43,20 @@ class AksaiParser(BaseParser, BaseRequest):
         if max_news:
             self.max_news = max_news
         news = []
-        async with self.session:
-            for new_url in urls:
-                if len(news) >= self.max_news:
-                    return news
-                soup = await self.get_soup(session=self.session, url=new_url, headers=headers, referer=self.referer)
-                new = self.get_new(soup, url=new_url)
-                if not new:
-                    continue
-                await asyncio.sleep(random.randrange(8, 15))
-                news.append(new)
-        return news
+        try:
+            async with self.session:
+                for new_url in urls:
+                    if len(news) >= self.max_news:
+                        return news
+                    soup = await self.get_soup(session=self.session, url=new_url, headers=headers, referer=self.referer)
+                    new = self.get_new(soup, url=new_url)
+                    if not new:
+                        continue
+                    await asyncio.sleep(random.randrange(8, 15))
+                    news.append(new)
+        finally:
+            await self.session.close()
+            return news
 
     async def find_news_urls(self) -> list[str]:
         self.session: ClientSession = self.create_session(headers=headers)

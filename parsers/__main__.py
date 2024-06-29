@@ -29,9 +29,9 @@ async def start_scheduler() -> AsyncIOScheduler:
 
 
 n = 0
-not_found_new_urls_cities = []
-not_found_urls_cities = []
-not_found_news_cities = []
+not_found_new_urls_cities = set()
+not_found_urls_cities = set()
+not_found_news_cities = set()
 
 
 async def parse_news() -> None:
@@ -42,7 +42,8 @@ async def parse_news() -> None:
         predicate=inspect.isclass,
     ):
         try:
-            parser_instance: BaseParser = parser_class()
+            parser_object = BaseParser()
+            parser_instance: BaseParser = parser_class(parser_object=parser_object)
         except Exception:
             logger.exception(f'{_parser_class_str}')
             continue
@@ -78,8 +79,8 @@ async def find_urls_for_news(parser_instance: BaseParser) -> list | None:
     try:
         urls: list = await parser_instance.find_news_urls()
     except ParserNoUrlsError as error:
-        not_found_urls_cities.append(str(parser_instance.city))
-        logger.error(f'{error.message}')
+        not_found_urls_cities.add(str(parser_instance.city))
+        logger.error(f'{error.message}')  # noqa: TRY400
         return None
 
     final_urls = copy(urls)
@@ -89,7 +90,7 @@ async def find_urls_for_news(parser_instance: BaseParser) -> list | None:
 
     if not final_urls:
         logger.debug(f'Нет новых новостей в городе {parser_instance.city!s}')
-        not_found_new_urls_cities.append(str(parser_instance.city))
+        not_found_new_urls_cities.add(str(parser_instance.city))
     return final_urls
 
 
@@ -100,7 +101,7 @@ async def parsing_news(parser_instance: BaseParser, urls: list) -> list[Post] | 
     )
     if not news_posts:
         logger.warning(f'Не собрались новости по имеющимся ссылкам в городе {parser_instance.city!s}')
-        not_found_news_cities.append(str(parser_instance.city))
+        not_found_news_cities.add(str(parser_instance.city))
         return None
     return news_posts
 

@@ -54,14 +54,12 @@ class SiteModel(StrEnum):
     PENZA = auto()
     KIROV = auto()
     TAGIL = auto()
-
     ASHHABAD = auto()
     KINESHMA = auto()
     BREST = auto()
     BARANOVICHI = auto()
     SHIMKENT = auto()
     ORENBURG = auto()
-
     PETROPAVLOVSK = auto()
     USTKAMENOGORSK = auto()
     KARAGANDA = auto()
@@ -81,6 +79,27 @@ class SiteModel(StrEnum):
     TVER = auto()
     UFA = auto()
     HIMKI = auto()
+
+    SANPAULU = auto()
+    RIO = auto()
+    SALVADOR = auto()
+    BRAZILIA = auto()
+    FORTALEZA = auto()
+    BELU = auto()
+    MANAUS = auto()
+    KURITTIBA = auto()
+    RESIFI = auto()
+    PORTU = auto()
+    BELEN = auto()
+    GOYANIYA = auto()
+    GUARULUS = auto()
+    KAMPINAS = auto()
+    SANLUIS = auto()
+    SANGONSALU = auto()
+    MASEIO = auto()
+    DUKI = auto()
+    NATAL = auto()
+    KAMPU = auto()
 
 
 @dataclass
