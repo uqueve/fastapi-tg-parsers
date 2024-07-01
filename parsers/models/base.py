@@ -76,7 +76,11 @@ class BaseParser(ABC):
             parser_name=str(self.city),
         )
 
-    async def get_news(self, urls: list, max_news: int | None = 3, headers: dict = None) -> list[Post]:
+    @abstractmethod
+    async def get_news(self, urls: list, max_news: int | None = 3, headers: dict = None, json: bool = False) -> list[Post]:
+        raise NotImplementedError
+
+    async def _get_news(self, urls: list, max_news: int | None = 3, headers: dict = None, json: bool = False) -> list[Post]:
         if not self.headers:
             headers = self.request_object.get_base_headers()
         self.session: ClientSession = self.request_object.create_session(headers=headers)
@@ -88,11 +92,18 @@ class BaseParser(ABC):
                 for new_url in urls:
                     if len(news) >= self.max_news:
                         return news
-                    soup = await self.request_object.get_soup(
-                        session=self.session,
-                        url=new_url,
-                        headers=headers,
-                        referer=self.referer)
+                    if json:
+                        soup = await self.request_object.get_json(
+                            session=self.session,
+                            url=new_url,
+                            headers=headers,
+                            referer=self.referer)
+                    else:
+                        soup = await self.request_object.get_soup(
+                            session=self.session,
+                            url=new_url,
+                            headers=headers,
+                            referer=self.referer)
                     new = self.get_new(soup, url=new_url)
                     if not new:
                         continue

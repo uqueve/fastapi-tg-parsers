@@ -32,16 +32,17 @@ headers = {
 
 
 @dataclass
-class FortalezaParser(BaseParser, BaseRequest):
+class SangonsaluParser(BaseParser, BaseRequest):
     request_object: BaseRequest
-    city: SiteModel = SiteModel.FORTALEZA
-    name: str = 'fortaleza'
-    __base_url: str = 'https://fortaleza1918.com.br'
-    __news_url: str = 'https://fortaleza1918.com.br/noticias/'
-    referer: str = 'https://fortaleza1918.com.br/noticias/'
+    city: SiteModel = SiteModel.SANGONSALU
+    name: str = 'sangonsalu'
+    __base_url: str = 'https://www.saogoncalo.rj.gov.br'
+    __news_url: str = 'https://www.saogoncalo.rj.gov.br/noticias/'
+    referer: str = 'https://www.saogoncalo.rj.gov.br/noticias/'
     headers: dict = field(default_factory=lambda: headers)
 
     async def find_news_urls(self) -> list[str]:
+        self.request_object.name = self.name
         self.session: ClientSession = self.create_session(headers=headers)
         urls = []
         url = self.__news_url
@@ -50,9 +51,7 @@ class FortalezaParser(BaseParser, BaseRequest):
                 soup = await self.get_soup(url=url, headers=headers, session=self.session)
         finally:
             await self.session.close()
-
-        main_ul = soup.find('ul', class_='listaNoticias')
-        items = main_ul.find_all('li', limit=8)
+        items = soup.find_all('div', class_='card card-pg-noticias', limit=8)
         if not items:
             raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         for item in items:
@@ -68,32 +67,45 @@ class FortalezaParser(BaseParser, BaseRequest):
         return urls
 
     def find_title(self, soup: BeautifulSoup) -> str | None:
-        title = soup.find('h2', class_='elementor-heading-title elementor-size-default')
+        title = soup.find('h1')
         if not title:
+            print('no title')
             return None
         title = title.text.replace('\xa0', ' ').strip()
         return title
 
     def find_body(self, soup: BeautifulSoup) -> str | None:
         body = ''
-        ps = soup.find_all('p')
+        main_div = soup.find('div', attrs={'id': 'content-noticia'})
+        ps = main_div.find_all('p')
         for p in ps:
             body += p.text.replace('\xa0', ' ').strip()
+        if not body:
+            print('no body')
         return body
 
     def find_photos(self, soup: BeautifulSoup) -> list:
         photos = []
-        photo_divs = soup.find_all('figure', lambda x: self.base_find_value(x, 'wp-block-image'))
+        main_div = soup.find('div', attrs={'id': 'content-noticia'})
+        photo_divs = main_div.find_all('figure', class_=lambda x: self.base_find_value(x, 'wp-block-image '))
         for photo_div in photo_divs:
-            if photo_div:
-                photo = photo_div.find('img').get('src')
-                photos.append(photo)
+            if not photo_div:
+                continue
+            photo = photo_div.find('a')
+            if not photo:
+                continue
+            photo = photo.get('href')
+            if not photo.startswith('https:'):
+                photo = self.__base_url + photo
+            photos.append(photo)
+        if len(photos) >= 9:
+            return photos[:8]
         return photos
 
 
 async def test() -> None:
     request_obj = BaseRequest()
-    parser = FortalezaParser(request_object=request_obj)
+    parser = SangonsaluParser(request_object=request_obj)
     urls = await parser.find_news_urls()
     # print(urls)
     print(await parser.get_news(urls))
