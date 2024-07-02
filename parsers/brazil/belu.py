@@ -1,5 +1,4 @@
 import asyncio
-import random
 from dataclasses import dataclass, field
 
 from aiohttp import ClientSession
@@ -32,7 +31,7 @@ headers = {
 
 
 @dataclass
-class BeluParser(BaseParser, BaseRequest):
+class BeluParser(BaseParser):
     request_object: BaseRequest
     city: SiteModel = SiteModel.BELU
     name: str = 'belu'
@@ -41,17 +40,16 @@ class BeluParser(BaseParser, BaseRequest):
     referer: str = 'https://www.belohorizonte.com.br/category/noticias/'
     headers: dict = field(default_factory=lambda: headers)
 
-    async def get_news(self, urls: list, max_news: int | None = 3, headers: dict = None, json: bool = False) -> list[Post]:
-
-
+    async def get_news(self, urls: list, max_news: int | None = 3) -> list[Post]:
+        return await self._get_news(urls=urls, max_news=max_news, headers=self.headers)
 
     async def find_news_urls(self) -> list[str]:
-        self.session: ClientSession = self.create_session(headers=headers)
+        self.session: ClientSession = self.request_object.create_session(headers=headers)
         urls = []
         url = self.__news_url
         try:
             async with self.session:
-                soup = await self.get_soup(url=url, headers=headers, session=self.session)
+                soup = await self.request_object.get_soup(url=url, session=self.session)
         finally:
             await self.session.close()
 

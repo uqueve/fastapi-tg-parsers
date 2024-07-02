@@ -1,6 +1,5 @@
 import asyncio
-import random
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from aiohttp import ClientSession
 from bs4 import BeautifulSoup
@@ -31,34 +30,26 @@ headers = {
 
 
 @dataclass
-class OrenburgParser(BaseParser, BaseRequest):
+class OrenburgParser(BaseParser):
+    request_object: BaseRequest
+    headers: dict = field(default_factory=lambda: headers)
     city: SiteModel = SiteModel.ORENBURG
     name: str = 'orenburg'
     __base_url = 'https://orenday.ru/'
     __news_url = 'https://orenday.ru/'
     referer = 'https://orenday.ru/'
 
-    async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
-        if max_news:
-            self.max_news = max_news
-        news = []
-        async with self.session:
-            for new_url in urls:
-                if len(news) >= self.max_news:
-                    return news
-                soup = await self.get_soup(session=self.session, url=new_url, headers=headers, referer=self.referer)
-                new = self.get_new(soup, url=new_url)
-                if not new:
-                    continue
-                await asyncio.sleep(random.randrange(8, 15))
-                news.append(new)
-        return news
+    async def get_news(self, urls: list, max_news: int | None = 3) -> list[Post]:
+        return await self._get_news(urls=urls, max_news=max_news, headers=self.headers)
 
     async def find_news_urls(self) -> list[str]:
-        self.session: ClientSession = self.create_session(headers=headers)
+        self.session: ClientSession = self.request_object.create_session(headers=self.headers)
         urls = []
         url = self.__news_url
-        soup = await self.get_soup(url=url, headers=headers, session=self.session)
+
+        async with self.session:
+            soup = await self.request_object.get_soup(url=url, session=self.session)
+
         main_block = soup.find('div', class_='last-news')
         news = main_block.find_all('a', class_=lambda v: find_value(v, 'new-title'))
         if not news:

@@ -43,9 +43,6 @@ class BaseRequest:
         self,
         session: ClientSession,
         url: str,
-        headers: dict = None,
-        cookies: dict = None,
-        referer: str = None,
     ) -> BeautifulSoup:
         response = await self._make_async_request(
             session=session,
@@ -58,10 +55,7 @@ class BaseRequest:
         self,
         session: ClientSession,
         url: str,
-        headers: dict = None,
-        cookies: dict = None,
         json: bool = True,
-        referer: str = None,
     ) -> dict:
         return await self._make_async_request(
             session=session,
@@ -190,7 +184,7 @@ class BaseRequest:
     def get_base_headers() -> dict:
         return {
             'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,'
-                      'application/signed-exchange;v=b3;q=0.7',
+            'application/signed-exchange;v=b3;q=0.7',
             'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7,ja;q=0.6',
             'cache-control': 'max-age=0',
             'dnt': '1',

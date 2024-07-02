@@ -1,6 +1,5 @@
 import asyncio
 import json
-import random
 from dataclasses import dataclass
 
 from aiohttp import ClientSession
@@ -9,7 +8,6 @@ from bs4 import BeautifulSoup
 from parsers.models.base import BaseParser
 from parsers.models.cities import SiteModel
 from parsers.models.posts import Post
-from parsers.models.request import BaseRequest
 from utils.exceptions.parsers import ParserNoUrlsError
 
 headers = {
@@ -31,41 +29,29 @@ headers = {
 
 
 @dataclass
-class TbilisiParser(BaseParser, BaseRequest):
+class TbilisiParser(BaseParser):
     city: SiteModel = SiteModel.TBILISI
     name: str = 'tbilisi'
     __base_url = 'https://ria.ru'
     __news_url = __base_url + '/amp/location_Georgia/more.json'
     referer = 'https://ria.ru/amp/location_Georgia/'
 
-    async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
-        if max_news:
-            self.max_news = max_news
-        news = []
-        async with self.session:
-            for new_url in urls:
-                if len(news) >= self.max_news:
-                    return news
-                soup = await self.get_soup(session=self.session, url=new_url, headers=headers, referer=self.referer)
-                new = self.get_new(soup, url=new_url)
-                if not new:
-                    continue
-                await asyncio.sleep(random.randrange(3, 8))
-                news.append(new)
-        return news
+    async def get_news(self, urls: list, max_news: int | None = 3) -> list[Post]:
+        return await self._get_news(urls=urls, max_news=max_news, headers=self.headers)
 
     async def find_news_urls(self) -> list[str]:
-        self.session: ClientSession = self.create_session(headers=headers)
+        self.session: ClientSession = self.request_object.create_session(headers=self.headers)
         urls = []
         url = self.__news_url
-        json_obj = await self.get_json(url=url, headers=headers, session=self.session)
+
+        async with self.session:
+            json_obj = await self.request_object.get_json(url=url, session=self.session)
+
         if not json_obj.get('items'):
-            await self.session.close()
             raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=json_obj)
         for new in json_obj['items']:
             urls.append(new['url'])
         if not urls:
-            await self.session.close()
             raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=json_obj)
         return urls
 

@@ -1,6 +1,5 @@
 import asyncio
-import random
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from aiohttp import ClientSession
 from bs4 import BeautifulSoup
@@ -31,44 +30,34 @@ headers = {
 
 
 @dataclass
-class SamarkandParser(BaseParser, BaseRequest):
+class SamarkandParser(BaseParser):
+    request_object: BaseRequest
+    headers: dict = field(default_factory=lambda: headers)
     city: SiteModel = SiteModel.SAMARKAND
     name: str = 'samarkand'
     __base_url: str = 'https://stv.uz'
     __news_url: str = 'https://stv.uz/news/newsamar/'
     referer: str = 'https://stv.uz/news/newsamar/'
 
-    async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
-        if max_news:
-            self.max_news = max_news
-        news = []
-        async with self.session:
-            for new_url in urls:
-                if len(news) >= self.max_news:
-                    return news
-                soup = await self.get_soup(session=self.session, url=new_url, headers=headers, referer=self.referer)
-                new = self.get_new(soup, url=new_url)
-                if not new:
-                    continue
-                await asyncio.sleep(random.randrange(8, 15))
-                news.append(new)
-        return news
+    async def get_news(self, urls: list, max_news: int | None = 3) -> list[Post]:
+        return await self._get_news(urls=urls, max_news=max_news, headers=self.headers)
 
     async def find_news_urls(self) -> list[str]:
-        self.session: ClientSession = self.create_session(headers=headers)
+        self.session: ClientSession = self.request_object.create_session(headers=self.headers)
         urls = []
         url = self.__news_url
-        soup = await self.get_soup(url=url, headers=headers, session=self.session)
+
+        async with self.session:
+            soup = await self.request_object.get_soup(url=url, session=self.session)
+
         items = soup.find_all('header', class_='shorttitle', limit=15)
         if not items:
-            await self.session.close()
             raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         for item in items:
             url = item.find('a')
             if url and (url := url.get('href')):
                 urls.append(url)
         if not urls:
-            await self.session.close()
             raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         return urls
 

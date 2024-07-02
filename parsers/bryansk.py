@@ -13,7 +13,9 @@ from utils.exceptions.parsers import ParserNoUrlsError
 
 
 @dataclass
-class BryanskParser(BaseParser, BaseRequest):
+class BryanskParser(BaseParser):
+    request_object: BaseRequest
+    headers: dict = None
     city: SiteModel = SiteModel.BRYANSK
     name: str = 'bryansk'
     __base_url: str = 'https://newsbryansk.ru/'
@@ -27,7 +29,7 @@ class BryanskParser(BaseParser, BaseRequest):
             for new_url in urls:
                 if len(news) >= self.max_news:
                     return news
-                soup = await self.get_soup(session=self.session, url=new_url)
+                soup = await self.request_object.get_soup(session=self.session, url=new_url)
                 new = self.get_new(soup, url=new_url)
                 if not new:
                     continue
@@ -36,10 +38,14 @@ class BryanskParser(BaseParser, BaseRequest):
         return news
 
     async def find_news_urls(self) -> list[str]:
-        self.session: ClientSession = self.create_session()
+        self.session: ClientSession = self.request_object.create_session(headers=self.headers)
         urls = []
         url = self.__news_url
-        soup = await self.get_soup(url=url, session=self.session)
+        try:
+            async with self.session:
+                soup = await self.request_object.get_soup(url=url, session=self.session)
+        finally:
+            await self.session.close()
         items = soup.find_all(
             'div',
             class_=lambda value: find_value(value, 'big-news-list-item big-news-list-'),

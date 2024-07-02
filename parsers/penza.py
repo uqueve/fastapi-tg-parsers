@@ -1,6 +1,5 @@
 import asyncio
-import random
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from aiohttp import ClientSession
 from bs4 import BeautifulSoup
@@ -31,43 +30,34 @@ headers = {
 
 
 @dataclass
-class PenzaParser(BaseParser, BaseRequest):
+class PenzaParser(BaseParser):
+    request_object: BaseRequest
+    headers: dict = field(default_factory=lambda: headers)
     city: SiteModel = SiteModel.PENZA
     name: str = 'penza'
     __base_url = 'https://www.penzainform.ru'
     __news_url = 'https://www.penzainform.ru/news/'
     referer = 'https://www.penzainform.ru/news/'
 
-    async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
-        if max_news:
-            self.max_news = max_news
-        news = []
-        async with self.session:
-            for new_url in urls:
-                if len(news) >= self.max_news:
-                    return news
-                soup = await self.get_soup(session=self.session, url=new_url, headers=headers, referer=self.referer)
-                new = self.get_new(soup, url=new_url)
-                if not new:
-                    continue
-                await asyncio.sleep(random.randrange(8, 15))
-                news.append(new)
-        return news
+    async def get_news(self, urls: list, max_news: int | None = 3) -> list[Post]:
+        return await self._get_news(urls=urls, max_news=max_news, headers=self.headers)
 
     async def find_news_urls(self) -> list[str]:
-        self.session: ClientSession = self.create_session(headers=headers)
+        self.session: ClientSession = self.request_object.create_session(headers=self.headers)
         urls = []
         url = self.__news_url
-        soup = await self.get_soup(url=url, headers=headers, session=self.session)
+
+        async with self.session:
+            soup = await self.request_object.get_soup(url=url, session=self.session)
 
         alpha_div = soup.find('div', class_='grid_4 alpha')
-        if alpha_div and (alpha_img := alpha_div.find('a')):
+        if alpha_div and (alpha_img := alpha_div.find('a')):  # noqa: SIM102
             if alpha_photo_raw := alpha_img.get('href'):
                 alpha_photo = self.__base_url + alpha_photo_raw
                 urls.append(alpha_photo)
 
         omega_div = soup.find('div', class_='grid_4 omega')
-        if omega_div and (omega_img := omega_div.find('a')):
+        if omega_div and (omega_img := omega_div.find('a')):  # noqa: SIM102
             if omega_photo_raw := omega_img.get('href'):
                 omega_photo = self.__base_url + omega_photo_raw
                 urls.append(omega_photo)

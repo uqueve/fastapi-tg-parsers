@@ -1,6 +1,5 @@
 import asyncio
-import random
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from aiohttp import ClientSession
 from bs4 import BeautifulSoup
@@ -27,34 +26,27 @@ headers = {
 
 
 @dataclass
-class BishkekParser(BaseParser, BaseRequest):
+class BishkekParser(BaseParser):
+    request_object: BaseRequest
+    headers: dict = field(default_factory=lambda: headers)
     city: SiteModel = SiteModel.BISHKEK
     name: str = 'bishkek'
     __base_url: str = 'https://ru.sputnik.kg'
     __news_url: str = 'https://ru.sputnik.kg/Kyrgyzstan/'
     referer: str = 'https://ru.sputnik.kg/Kyrgyzstan/'
 
-    async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
-        if max_news:
-            self.max_news = max_news
-        news = []
-        async with self.session:
-            for new_url in urls:
-                if len(news) >= self.max_news:
-                    return news
-                soup = await self.get_soup(session=self.session, url=new_url, headers=headers, referer=self.referer)
-                new = self.get_new(soup, url=new_url)
-                if not new:
-                    continue
-                await asyncio.sleep(random.randrange(8, 15))
-                news.append(new)
-        return news
+    async def get_news(self, urls: list, max_news: int | None = 3) -> list[Post]:
+        return await self._get_news(urls=urls, max_news=max_news, headers=self.headers)
 
     async def find_news_urls(self) -> list[str]:
-        self.session: ClientSession = self.create_session(headers=headers)
+        self.session: ClientSession = self.request_object.create_session(headers=self.headers)
         urls = []
         url = self.__news_url
-        soup = await self.get_soup(url=url, headers=headers, session=self.session)
+        try:
+            async with self.session:
+                soup = await self.request_object.get_soup(url=url, session=self.session)
+        finally:
+            await self.session.close()
         items = soup.find_all('div', class_=lambda v: find_value(v, 'list__item'), limit=4)
         if not items:
             await self.session.close()

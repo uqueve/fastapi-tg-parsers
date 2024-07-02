@@ -448,5 +448,77 @@ def get_actual_cities_json() -> list[dict]:
             'ru': 'Уфа',
             'oid': '75',
         },
+        {
+            'city': SiteModel.BELU,
+            'channel_tg_id': -1002122489783,
+            'ru': 'Белу-Оризонти',
+            'oid': '76',
+        },
+        {
+            'city': SiteModel.KAMPINAS,
+            'channel_tg_id': -1002132116187,
+            'ru': 'Кампинас',
+            'oid': '77',
+        },
+        {
+            'city': SiteModel.DUKI,
+            'channel_tg_id': -1002016066715,
+            'ru': 'Дуки-ди-Кашиас',
+            'oid': '78',
+        },
+        {
+            'city': SiteModel.FORTALEZA,
+            'channel_tg_id': -1002070930646,
+            'ru': 'Форталеза',
+            'oid': '79',
+        },
+        {
+            'city': SiteModel.GUARULUS,
+            'channel_tg_id': -1002123451225,
+            'ru': 'Гуарульюс',
+            'oid': '80',
+        },
+        {
+            'city': SiteModel.KAMPU,
+            'channel_tg_id': -1002131340260,
+            'ru': 'Кампу-Гранди',
+            'oid': '81',
+        },
+        {
+            'city': SiteModel.KURITTIBA,
+            'channel_tg_id': -1002118097967,
+            'ru': 'Куритиба',
+            'oid': '82',
+        },
+        {
+            'city': SiteModel.RIO,
+            'channel_tg_id': -1002117542756,
+            'ru': 'Рио-де-Жанейро',
+            'oid': '83',
+        },
+        {
+            'city': SiteModel.SALVADOR,
+            'channel_tg_id': -1002040202223,
+            'ru': 'Салвадор',
+            'oid': '84',
+        },
+        {
+            'city': SiteModel.SANGONSALU,
+            'channel_tg_id': -1002011356956,
+            'ru': 'Сан-Гонсалу',
+            'oid': '85',
+        },
+        {
+            'city': SiteModel.SANLUIS,
+            'channel_tg_id': -1002007196820,
+            'ru': 'Сан-Луис',
+            'oid': '86',
+        },
+        {
+            'city': SiteModel.SANPAULU,
+            'channel_tg_id': -1002082297035,
+            'ru': 'Сан-Паулу',
+            'oid': '87',
+        },
     ]
     return cities

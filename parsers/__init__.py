@@ -104,5 +104,5 @@ __all__ = (
     'SevastopolParser',
     'SanPauluParser',
     'SalvadorParser',
-    'RioParser'
+    'RioParser',
 )

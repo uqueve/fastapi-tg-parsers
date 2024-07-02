@@ -77,7 +77,7 @@ class BaseParser(ABC):
         )
 
     @abstractmethod
-    async def get_news(self, urls: list, max_news: int | None = 3, headers: dict = None, json: bool = False) -> list[Post]:
+    async def get_news(self, urls: list, max_news: int | None = 3) -> list[Post]:
         raise NotImplementedError
 
     async def _get_news(self, urls: list, max_news: int | None = 3, headers: dict = None, json: bool = False) -> list[Post]:
@@ -93,20 +93,18 @@ class BaseParser(ABC):
                     if len(news) >= self.max_news:
                         return news
                     if json:
-                        soup = await self.request_object.get_json(
-                            session=self.session,
-                            url=new_url,
-                            headers=headers,
-                            referer=self.referer)
+                        soup = await self.request_object.get_json(session=self.session, url=new_url)
                     else:
                         soup = await self.request_object.get_soup(
                             session=self.session,
                             url=new_url,
-                            headers=headers,
-                            referer=self.referer)
+                        )
+
                     new = self.get_new(soup, url=new_url)
+
                     if not new:
                         continue
+
                     await asyncio.sleep(random.randrange(8, 15))
                     news.append(new)
         finally:

@@ -1,6 +1,5 @@
 import asyncio
-import random
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from aiohttp import ClientSession
 from bs4 import BeautifulSoup
@@ -32,41 +31,32 @@ headers = {
 
 
 @dataclass
-class AksaiParser(BaseParser, BaseRequest):
+class AksaiParser(BaseParser):
+    request_object: BaseRequest
+    headers: dict = field(default_factory=lambda: headers)
     name: str = 'aksai'
     city: SiteModel = SiteModel.AKSAI
     __base_url = 'https://pobeda-aksay.ru'
     __news_url = 'https://pobeda-aksay.ru/'
     referer = 'https://pobeda-aksay.ru/'
 
-    async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
-        if max_news:
-            self.max_news = max_news
-        news = []
-        try:
-            async with self.session:
-                for new_url in urls:
-                    if len(news) >= self.max_news:
-                        return news
-                    soup = await self.get_soup(session=self.session, url=new_url, headers=headers, referer=self.referer)
-                    new = self.get_new(soup, url=new_url)
-                    if not new:
-                        continue
-                    await asyncio.sleep(random.randrange(8, 15))
-                    news.append(new)
-        finally:
-            await self.session.close()
-            return news
+    async def get_news(self, urls: list, max_news: int | None = 3) -> list[Post]:
+        return await self._get_news(urls=urls, max_news=max_news, headers=self.headers)
 
     async def find_news_urls(self) -> list[str]:
-        self.session: ClientSession = self.create_session(headers=headers)
+        self.session: ClientSession = self.request_object.create_session(headers=self.headers)
         urls = []
         url = self.__news_url
-        soup = await self.get_soup(session=self.session, url=url, headers=headers)
+
+        try:
+            async with self.session:
+                soup = await self.request_object.get_soup(session=self.session, url=url)
+        finally:
+            await self.session.close()
+
         main_block = soup.find('div', class_='feed-news')
         news = main_block.find_all('h2')
         if not news:
-            await self.session.close()
             raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         for new in news:
             url = new.find('a')

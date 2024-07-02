@@ -1,6 +1,5 @@
 import asyncio
-import random
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from aiohttp import ClientSession
 from bs4 import BeautifulSoup
@@ -31,37 +30,28 @@ headers = {
 
 
 @dataclass
-class TverParser(BaseParser, BaseRequest):
+class TverParser(BaseParser):
+    request_object: BaseRequest
+    headers: dict = field(default_factory=lambda: headers)
     city: SiteModel = SiteModel.TVER
     name: str = 'tver'
     __base_url: str = 'https://tverigrad.ru'
     __news_url: str = 'https://tverigrad.ru/publication/'
     referer: str = 'https://tverigrad.ru/publication/'
 
-    async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
-        if max_news:
-            self.max_news = max_news
-        news = []
-        async with self.session:
-            for new_url in urls:
-                if len(news) >= self.max_news:
-                    return news
-                soup = await self.get_soup(session=self.session, url=new_url, headers=headers, referer=self.referer)
-                new = self.get_new(soup, url=new_url)
-                if not new:
-                    continue
-                await asyncio.sleep(random.randrange(3, 8))
-                news.append(new)
-        return news
+    async def get_news(self, urls: list, max_news: int | None = 3) -> list[Post]:
+        return await self._get_news(urls=urls, max_news=max_news, headers=self.headers)
 
     async def find_news_urls(self) -> list[str]:
-        self.session: ClientSession = self.create_session(headers=headers)
+        self.session: ClientSession = self.request_object.create_session(headers=self.headers)
         urls = []
         url = self.__news_url
-        soup = await self.get_soup(url=url, headers=headers, session=self.session)
+
+        async with self.session:
+            soup = await self.request_object.get_soup(url=url, session=self.session)
+
         main_block = soup.find('div', class_='lenta_main_news')
         if not main_block:
-            await self.session.close()
             raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         items = main_block.find_all(
             'div',
@@ -69,7 +59,6 @@ class TverParser(BaseParser, BaseRequest):
             limit=5,
         )
         if not items:
-            await self.session.close()
             raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         for item in items:
             url_raw = item.find('a')
@@ -80,7 +69,6 @@ class TverParser(BaseParser, BaseRequest):
                 url = self.__base_url + url
             urls.append(url)
         if not urls:
-            await self.session.close()
             raise ParserNoUrlsError(parser_name=self.name, city=str(self.city), source=soup)
         return urls
 

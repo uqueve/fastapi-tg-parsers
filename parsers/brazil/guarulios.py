@@ -1,5 +1,4 @@
 import asyncio
-import random
 from dataclasses import dataclass, field
 
 from aiohttp import ClientSession
@@ -7,7 +6,6 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.cities import SiteModel
-from parsers.models.posts import Post
 from parsers.models.request import BaseRequest
 from utils.exceptions.parsers import ParserNoUrlsError
 
@@ -32,7 +30,7 @@ headers = {
 
 
 @dataclass
-class GuaruliosParser(BaseParser, BaseRequest):
+class GuaruliosParser(BaseParser):
     request_object: BaseRequest
     city: SiteModel = SiteModel.GUARULUS
     name: str = 'guarulios'
@@ -43,12 +41,12 @@ class GuaruliosParser(BaseParser, BaseRequest):
 
     async def find_news_urls(self) -> list[str]:
         self.request_object.name = self.name
-        self.session: ClientSession = self.create_session(headers=headers)
+        self.session: ClientSession = self.request_object.create_session(headers=self.headers)
         urls = []
         url = self.__news_url
         try:
             async with self.session:
-                soup = await self.get_soup(url=url, headers=headers, session=self.session)
+                soup = await self.request_object.get_soup(url=url, session=self.session)
         finally:
             await self.session.close()
         items = soup.find_all('h2', limit=8)

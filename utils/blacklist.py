@@ -17,7 +17,7 @@ blacklist_words: list = [
     'Парламентский вестник',
     'ForPost',
     'Качаем прессу',
-    'Wink'
+    'Wink',
 ]
 
 

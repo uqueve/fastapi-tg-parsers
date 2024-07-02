@@ -1,5 +1,4 @@
 import asyncio
-import random
 from dataclasses import dataclass, field
 
 from aiohttp import ClientSession
@@ -7,7 +6,6 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.cities import SiteModel
-from parsers.models.posts import Post
 from parsers.models.request import BaseRequest
 from utils.exceptions.parsers import ParserNoUrlsError
 
@@ -32,7 +30,7 @@ headers = {
 
 
 @dataclass
-class SalvadorParser(BaseParser, BaseRequest):
+class SalvadorParser(BaseParser):
     request_object: BaseRequest
     city: SiteModel = SiteModel.SALVADOR
     name: str = 'salvador'
@@ -42,7 +40,7 @@ class SalvadorParser(BaseParser, BaseRequest):
     headers: dict = field(default_factory=lambda: headers)
 
     # async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
-    #     self.session: ClientSession = self.create_session(headers=headers)
+    #     self.session: ClientSession = self.request_object.create_session(headers=self.headers)
     #     if max_news:
     #         self.max_news = max_news
     #     news = []
@@ -51,7 +49,7 @@ class SalvadorParser(BaseParser, BaseRequest):
     #             for new_url in urls:
     #                 if len(news) >= self.max_news:
     #                     return news
-    #                 soup = await self.get_soup(session=self.session, url=new_url, headers=headers, referer=self.referer)
+    #                 soup = await self.request_object.get_soup(session=self.session, url=new_url)
     #                 new = self.get_new(soup, url=new_url)
     #                 if not new:
     #                     continue
@@ -62,12 +60,12 @@ class SalvadorParser(BaseParser, BaseRequest):
     #     return news
 
     async def find_news_urls(self) -> list[str]:
-        self.session: ClientSession = self.create_session(headers=headers)
+        self.session: ClientSession = self.request_object.create_session(headers=self.headers)
         urls = []
         url = self.__news_url
         try:
             async with self.session:
-                soup = await self.get_soup(url=url, headers=headers, session=self.session)
+                soup = await self.request_object.get_soup(url=url, session=self.session)
         finally:
             await self.session.close()
 

@@ -1,5 +1,4 @@
 import asyncio
-import random
 from dataclasses import dataclass
 
 from aiohttp import ClientSession
@@ -13,34 +12,27 @@ from utils.exceptions.parsers import ParserNoUrlsError
 
 
 @dataclass
-class TashkentParser(BaseParser, BaseRequest):
+class TashkentParser(BaseParser):
+    request_object: BaseRequest
+    headers: dict = None
     city: SiteModel = SiteModel.TASHKENT
     name: str = 'tashkent'
     __base_url = 'https://www.gazeta.uz/'
     __news_url = __base_url + 'ru/'
     referer = 'https://www.gazeta.uz/ru/'
 
-    async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
-        if max_news:
-            self.max_news = max_news
-        news = []
-        async with self.session:
-            for new_url in urls:
-                if len(news) >= self.max_news:
-                    return news
-                soup = await self.get_soup(session=self.session, url=new_url, referer=self.referer)
-                new = self.get_new(soup, url=new_url)
-                if not new:
-                    continue
-                await asyncio.sleep(random.randrange(3, 8))
-                news.append(new)
-        return news
+    async def get_news(self, urls: list, max_news: int | None = 3) -> list[Post]:
+        return await self._get_news(urls=urls, max_news=max_news, headers=self.headers)
 
     async def find_news_urls(self) -> list[str]:
-        self.session: ClientSession = self.create_session()
+        self.session: ClientSession = self.request_object.create_session(headers=self.headers)
         urls = []
         url = self.__news_url
-        soup = await self.get_soup(url=url, session=self.session)
+        try:
+            async with self.session:
+                soup = await self.request_object.get_soup(url=url, session=self.session)
+        finally:
+            await self.session.close()
         articles_block = soup.find('div', class_='newsblock-2')
         articles = articles_block.find_all('div', class_='nblock', limit=10)
         if not articles:
