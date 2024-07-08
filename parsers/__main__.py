@@ -12,6 +12,7 @@ from database.mongo import mongo
 from parsers.models.base import BaseParser
 from parsers.models.cities import CitySchema, SiteModel
 from parsers.models.posts import Post
+from parsers.models.request import BaseRequest
 from utils.exceptions.parsers import ParserNoUrlsError
 from utils.exceptions.post import PostValidateError
 from utils.exceptions.telegram import TelegramSendError
@@ -28,58 +29,70 @@ async def start_scheduler() -> AsyncIOScheduler:
     return scheduler
 
 
-n = 0
-not_found_new_urls_cities = set()
-not_found_urls_cities = set()
-not_found_news_cities = set()
-
-
 async def parse_news() -> None:
-    global n, not_found_news_cities, not_found_urls_cities
+    urls_count = 0
+    posts_count = 0
+
+    not_parsed_posts_parsers = []
+    not_parsed_urls_parsers = []
 
     for _parser_class_str, parser_class in inspect.getmembers(
         object=parsers,
         predicate=inspect.isclass,
     ):
         try:
-            parser_object = BaseParser()
-            parser_instance: BaseParser = parser_class(parser_object=parser_object)
+            request_object = BaseRequest()
+            parser_instance: BaseParser = parser_class(request_object=request_object)
+            logger.debug("Инициализировал класс реквеста и парсера")
         except Exception:
-            logger.exception(f'{_parser_class_str}')
+            logger.exception(f"Ошибка инициализации классов: {_parser_class_str}")
             continue
 
+        logger.debug(f"Собираю ссылки {_parser_class_str}")
         urls_list = await find_urls_for_news(parser_instance=parser_instance)
 
         if not urls_list:
+            logger.debug(f"Не собрал ссылки {_parser_class_str}")
+            not_parsed_urls_parsers.append(_parser_class_str)
             continue
 
+        logger.debug(f"Собрал ссылки {_parser_class_str}")
+
+        urls_count += len(urls_list)
+
+        logger.debug(f"Собираю посты {_parser_class_str}")
         posts = await parsing_news(parser_instance=parser_instance, urls=urls_list)
 
         if not posts:
+            logger.debug(f"Не собрал посты {_parser_class_str}")
+            not_parsed_posts_parsers.append(_parser_class_str)
             continue
+
+        logger.debug(f"Собрал посты {_parser_class_str}")
+
+        posts_text = ""
+        for post in posts:
+            posts_text += post.link
+        logger.debug(f"Для парсера {_parser_class_str} собрались посты: {posts_text}")
 
         await add_news_to_database(news_posts=posts)
 
-    logger.info(f'Новостей добавлено за цикл парсинга: {n}')
-    logger.info(f'Список городов для которых нет новых ссылок:\n{not_found_new_urls_cities}')
-    logger.warning(f'Список городов для которых не собрались ссылки:\n{not_found_urls_cities}')
-    logger.warning(f'Список городов для которых не собрались новости по имеющимся ссылкам:\n{not_found_news_cities}')
-    n = 0
-    not_found_news_cities.clear()
-    not_found_urls_cities.clear()
+        posts_count += len(posts)
+    logger.info(f"Не собрались ссылки: {not_parsed_urls_parsers}")
+    logger.info(f"Не собрались посты: {not_parsed_posts_parsers}")
+    logger.info(f"Собрано новых ссылок: {urls_count}")
+    logger.info(f"Добавлено новых постов в БД: {posts_count}")
 
 
 async def find_urls_for_news(parser_instance: BaseParser) -> list | None:
-    global not_found_urls_cities
-    global not_found_new_urls_cities
 
     if not parser_instance:
+        logger.error("No parser_instance in find_urls_for_news")
         return None
 
     try:
         urls: list = await parser_instance.find_news_urls()
     except ParserNoUrlsError as error:
-        not_found_urls_cities.add(str(parser_instance.city))
         logger.error(f'{error.message}')  # noqa: TRY400
         return None
 
@@ -90,7 +103,6 @@ async def find_urls_for_news(parser_instance: BaseParser) -> list | None:
 
     if not final_urls:
         logger.debug(f'Нет новых новостей в городе {parser_instance.city!s}')
-        not_found_new_urls_cities.add(str(parser_instance.city))
     return final_urls
 
 
@@ -101,25 +113,23 @@ async def parsing_news(parser_instance: BaseParser, urls: list) -> list[Post] | 
     )
     if not news_posts:
         logger.warning(f'Не собрались новости по имеющимся ссылкам в городе {parser_instance.city!s}')
-        not_found_news_cities.add(str(parser_instance.city))
         return None
     return news_posts
 
 
 async def add_news_to_database(news_posts: list[Post]) -> None:
-    global n
 
     for post in news_posts:
-        if mongo.is_news_exists_by_title(title=post.title) is True:
-            continue
         try:
-            city_data = mongo.get_city_data_by_city(city=str(post.parser_name))
+            city_data = mongo.get_city_data_by_city(city=str(post.city_model))
         except AttributeError:
-            logger.warning(f'AttributeError. add_news_to_database Пост: {post}')
+            logger.warning(
+                f"Нет такого города: {post.city!s}. add_news_to_database. Пост: {post}",
+            )
             continue
 
         if not city_data:
-            logger.critical(f'Нет данных по городу {post.parser_name}. Новости не постятся.')
+            logger.critical(f'Нет данных по городу {post.city_model}. Новости не постятся.')
             continue
         # noinspection PyArgumentList #
         post.city = CitySchema(
@@ -133,8 +143,11 @@ async def add_news_to_database(news_posts: list[Post]) -> None:
             logger.warning(f'Пост пропущен. Details: {exception.message}')
             continue
 
-        mongo.add_one_news(post=post)
-        n += 1
+        try:
+            mongo.add_one_news(post=post)
+        except Exception as e:
+            logger.critical(f"Ошибка добавления поста в БД: {e}")
+            continue
 
 
 async def post_news() -> None:
@@ -143,7 +156,7 @@ async def post_news() -> None:
         try:
             if post := mongo.get_one_not_sent_news(city):
                 channel_tg_id = mongo.get_city_tg_id_by_name(city_name=city)
-
+                logger.debug("Готовлюсь отправлять пост")
                 await send_news(post, channel_tg_id, mongo)
 
                 logging.debug(
@@ -154,6 +167,7 @@ async def post_news() -> None:
                 logger.debug(f'Не найдено неотправленных новостей в городе {city!s}')
         except TelegramSendError as error:
             logging.exception(f'{error.message}')
+            continue
         except Exception:
             logging.exception('Error with sending posts')
             continue

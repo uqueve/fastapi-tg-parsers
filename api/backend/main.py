@@ -13,7 +13,7 @@ from parsers.__main__ import start_scheduler
 
 def setup_logger():
     logging.basicConfig(
-        level=logging.INFO, stream=sys.stdout, format='%(asctime)s - [%(levelname)s] - %(name)s - %(filename)s.%(funcName)s:%(lineno)d - %(message)s'
+        level=logging.DEBUG, stream=sys.stdout, format='%(asctime)s - [%(levelname)s] - %(name)s - %(filename)s.%(funcName)s:%(lineno)d - %(message)s'
     )
 
 

@@ -1,5 +1,6 @@
 import logging
 
+from database.mongo.sities import get_actual_cities_json
 from parsers.models.posts import Post
 from utils.openai_service import OpenAIService
 from utils.text_sevice import to_chunks
@@ -19,7 +20,18 @@ class CustomMediaChunks:
             self.title = ai_service.translate_title_request(self.title)
 
         if convert_with_ai:
-            self.text = ai_service.make_request(self.text)
+
+            try:
+                language = get_actual_cities_json()[post.city_model].get('language', 'русском')
+            except KeyError:
+                logger.exception('Ошибка получения информации по городу')
+                return
+            self.text = ai_service.make_request(
+                self.text, language=language, prompt_for="body",
+            )
+            self.title = ai_service.make_request(
+                self.title, language=language, prompt_for="title",
+            )
 
         have_post = post.images_count() > 0
         self.media = None

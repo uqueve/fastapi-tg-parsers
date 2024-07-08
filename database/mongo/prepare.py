@@ -10,15 +10,15 @@ def prepare_database() -> None:
         connection.create_collection(name='cities')
 
     collection = connection['cities']
-    cities = get_actual_cities_json()
+    cities: dict = get_actual_cities_json()
+    for city_model, city_info in cities.items():
 
-    for city in cities:
-        if not collection.find_one(filter={'name': str(city['city'])}):
+        if not collection.find_one(filter={'name': str(city_model)}):
             collection.insert_one(
                 document={
-                    'oid': str(city['oid']),
-                    'name': str(city['city']),
-                    'tg_id': int(city['channel_tg_id']),
-                    'ru': city['ru'],
+                    'oid': str(city_info['oid']),
+                    'name': str(city_info['city']),
+                    'tg_id': int(city_info['channel_tg_id']),
+                    'ru': city_info['ru'],
                 },
             )

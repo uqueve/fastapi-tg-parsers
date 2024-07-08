@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
-from parsers.models.cities import CitySchema
+from parsers.models.cities import CitySchema, SiteModel
 from utils.blacklist import blackword_in_news_validate
 from utils.exceptions.post import PostBlackWordInNewError, PostNoBodyError, PostNoTitleError
 
@@ -19,6 +19,7 @@ class Post(BaseModel):
     parser_name: str = Field(default='')
     posted: bool = Field(default=False)
     sent: bool = Field(default=False)
+    city_model: SiteModel = Field(default=None)
 
     def model_post_init(self, __context) -> None:
         self.oid = str(self.oid)

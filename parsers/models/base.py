@@ -74,6 +74,7 @@ class BaseParser(ABC):
             date=self.date,
             link=url,
             parser_name=str(self.city),
+            city_model=self.city,
         )
 
     @abstractmethod

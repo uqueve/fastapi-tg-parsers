@@ -21,21 +21,8 @@ class BryanskParser(BaseParser):
     __base_url: str = 'https://newsbryansk.ru/'
     __news_url: str = 'https://newsbryansk.ru/'
 
-    async def get_news(self, urls: list, max_news: int | None = None) -> list[Post]:
-        if max_news:
-            self.max_news = max_news
-        news = []
-        async with self.session:
-            for new_url in urls:
-                if len(news) >= self.max_news:
-                    return news
-                soup = await self.request_object.get_soup(session=self.session, url=new_url)
-                new = self.get_new(soup, url=new_url)
-                if not new:
-                    continue
-                await asyncio.sleep(random.choice(range(5)))
-                news.append(new)
-        return news
+    async def get_news(self, urls: list, max_news: int | None = 3) -> list[Post]:
+        return await self._get_news(urls=urls, max_news=max_news, headers=self.headers)
 
     async def find_news_urls(self) -> list[str]:
         self.session: ClientSession = self.request_object.create_session(headers=self.headers)
