@@ -107,6 +107,7 @@ class CitySchema:
     oid: str
     name: str
     ru: str
+    local: str = None
 
     def to_dict(self) -> dict:
-        return {'oid': self.oid, 'name': self.name, 'ru': self.ru}
+        return {'oid': self.oid, 'name': self.name, 'ru': self.ru, 'local': self.local}

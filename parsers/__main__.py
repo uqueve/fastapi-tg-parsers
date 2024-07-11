@@ -52,7 +52,7 @@ async def parse_news() -> None:
         urls_list = await find_urls_for_news(parser_instance=parser_instance)
 
         if not urls_list:
-            logger.debug(f"Не собрал ссылки {_parser_class_str}")
+            logger.warning(f"Не собрал ссылки {_parser_class_str}")
             not_parsed_urls_parsers.append(_parser_class_str)
             continue
 
@@ -64,7 +64,7 @@ async def parse_news() -> None:
         posts = await parsing_news(parser_instance=parser_instance, urls=urls_list)
 
         if not posts:
-            logger.debug(f"Не собрал посты {_parser_class_str}")
+            logger.warning(f"Не собрал посты {_parser_class_str}")
             not_parsed_posts_parsers.append(_parser_class_str)
             continue
 
@@ -72,7 +72,7 @@ async def parse_news() -> None:
 
         posts_text = ""
         for post in posts:
-            posts_text += post.link
+            posts_text += post.link + ' | '
         logger.debug(f"Для парсера {_parser_class_str} собрались посты: {posts_text}")
 
         await add_news_to_database(news_posts=posts)
@@ -136,6 +136,7 @@ async def add_news_to_database(news_posts: list[Post]) -> None:
             oid=city_data.get('oid'),
             name=city_data.get('name'),
             ru=city_data.get('ru'),
+            local=city_data.get('local'),
         )
         try:
             post.post_validate()
@@ -157,12 +158,14 @@ async def post_news() -> None:
             if post := mongo.get_one_not_sent_news(city):
                 channel_tg_id = mongo.get_city_tg_id_by_name(city_name=city)
                 logger.debug("Готовлюсь отправлять пост")
-                await send_news(post, channel_tg_id, mongo)
+                if await send_news(post, channel_tg_id, mongo):
 
-                logging.debug(
-                    f'В канал {city} ({channel_tg_id}) отправлена новость: {post.link})',
-                )
-                s += 1
+                    logging.debug(
+                        f'В канал {city} ({channel_tg_id}) отправлена новость: {post.link})',
+                    )
+                    s += 1
+                else:
+                    logger.error(f'Новость в город {city} не была отправлена в канал')
             else:
                 logger.debug(f'Не найдено неотправленных новостей в городе {city!s}')
         except TelegramSendError as error:

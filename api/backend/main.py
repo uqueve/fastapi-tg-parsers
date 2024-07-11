@@ -13,8 +13,16 @@ from parsers.__main__ import start_scheduler
 
 def setup_logger():
     logging.basicConfig(
-        level=logging.DEBUG, stream=sys.stdout, format='%(asctime)s - [%(levelname)s] - %(name)s - %(filename)s.%(funcName)s:%(lineno)d - %(message)s'
+        level=logging.DEBUG,
+        stream=sys.stdout,
+        format="%(asctime)s - [%(levelname)s] - %(name)s - %(filename)s.%(funcName)s:%(lineno)d - %(message)s",
     )
+    logging.getLogger("pymongo.command").setLevel(logging.INFO)
+    logging.getLogger("pymongo.serverSelection").setLevel(logging.INFO)
+    logging.getLogger("openai").setLevel(logging.INFO)
+    logging.getLogger("httpcore").setLevel(logging.INFO)
+    logging.getLogger("httpx").setLevel(logging.INFO)
+    logging.debug('Подготовка логгера')
 
 
 @asynccontextmanager

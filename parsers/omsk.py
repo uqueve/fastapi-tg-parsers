@@ -77,6 +77,8 @@ class OmskParser(BaseParser):
         image_urls = []
         photo_div = soup.find('div', class_='article__announce')
         photo_div = photo_div.find('div', class_='photoview__open')
+        if not photo_div:
+            return image_urls
         data = [json.loads(script.text) for script in photo_div.find_all('script', type='application/ld+json')]
 
         if data:

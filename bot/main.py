@@ -5,6 +5,7 @@ import aiohttp
 
 from bot.models import CustomMediaChunks
 from database.mongo import NewsRepository, settings
+from database.mongo.sities import get_actual_cities_json
 from parsers.models.posts import Post
 from utils.exceptions.telegram import (
     TelegramSendMediaGroupError,
@@ -16,7 +17,7 @@ from utils.text_sevice import chunks_to_text, correct_caption_len
 logger = logging.getLogger(__name__)
 
 
-async def send_news(post: Post, channel_tg_id: int, mongo: NewsRepository) -> None:
+async def send_news(post: Post, channel_tg_id: int, mongo: NewsRepository) -> bool:
     CAPTION_LENGTH = 1024
     # TODO: Bad Request: failed to send message #1 with the error message "WEBPAGE_MEDIA_EMPTY"
     media_chunks = CustomMediaChunks(post, translate=False, convert_with_ai=True)
@@ -25,7 +26,14 @@ async def send_news(post: Post, channel_tg_id: int, mongo: NewsRepository) -> No
     image_link = media_chunks.get_link()
 
     caption = chunks_to_text(chunks)
-    corrected_length_caption = correct_caption_len(caption=caption, city=post.city.ru)
+
+    try:
+        language = get_actual_cities_json()[post.city_model].get('language', 'английском')
+    except KeyError:
+        logger.exception(f'Ошибка получения информации по городу {post.city}')
+        return False
+
+    corrected_length_caption = correct_caption_len(caption=caption, city=post.city.local, language=language)
 
     chat_id = channel_tg_id
 
@@ -38,6 +46,7 @@ async def send_news(post: Post, channel_tg_id: int, mongo: NewsRepository) -> No
             except TelegramSendMediaGroupError as error:
                 # ruff: noqa:TRY400
                 logger.error(f'{error.message}')
+                return False
 
         else:
             caption_with_embedded_image = corrected_length_caption + f'<a href="{image_link}">&#160</a>'
@@ -51,15 +60,18 @@ async def send_news(post: Post, channel_tg_id: int, mongo: NewsRepository) -> No
                     await send_message(channel_id=channel_tg_id, text=corrected_length_caption, post=post)
                 except TelegramSendMessageError:
                     logger.error(f'{error.message}')
+                    return False
     else:
         try:
             await send_message(channel_id=channel_tg_id, text=corrected_length_caption, post=post)
         except TelegramSendMessageError as error:
             # ruff: noqa:TRY400
             logger.error(f'{error.message}')
+            return False
 
     mongo.update_news_set_posted(news_id=post.oid)
     mongo.update_news_body_ai(news_id=post.oid, body=post.body)
+    return True
 
 
 async def send_message(text: str, channel_id: int, post: Post) -> None:

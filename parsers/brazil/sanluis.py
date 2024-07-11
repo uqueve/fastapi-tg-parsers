@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 
 from parsers.models.base import BaseParser
 from parsers.models.cities import SiteModel
+from parsers.models.posts import Post
 from parsers.models.request import BaseRequest
 from utils.exceptions.parsers import ParserNoUrlsError
 
@@ -38,6 +39,9 @@ class SanluisParser(BaseParser):
     __news_url: str = 'https://saoluis.ma.gov.br/agencia/noticias'
     referer: str = 'https://saoluis.ma.gov.br/agencia/noticias'
     headers: dict = field(default_factory=lambda: headers)
+
+    async def get_news(self, urls: list, max_news: int | None = 3) -> list[Post]:
+        return await self._get_news(urls=urls, max_news=max_news, headers=self.headers)
 
     async def find_news_urls(self) -> list[str]:
         self.request_object.name = self.name

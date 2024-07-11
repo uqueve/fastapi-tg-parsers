@@ -24,7 +24,7 @@ news_router = APIRouter(tags=['News'])
     description='#### Получение непрочитанных новостей из конкретного города или из всех сразу',
     summary='Получение новостей',
 )
-async def get_all_news(
+async def get_all_news(  # noqa: ANN201
     city: Annotated[
         str | None,
         Query(
@@ -58,7 +58,7 @@ async def get_all_news(
     description='### Получение новости по её oid',
     summary='Получение новости по oid',
 )
-async def get_one_news_by_oid(
+async def get_one_news_by_oid(  # noqa: ANN201
     oid: Annotated[
         str,
         Path(
@@ -95,7 +95,7 @@ async def get_one_news_by_oid(
     },
     summary='Пометить новость прочитанной',
 )
-async def set_read_news(news: News):
+async def set_read_news(news: News):  # noqa: ANN201
     news_list_read: list = news.ids
     try:
         set_news_read(news_list_read)

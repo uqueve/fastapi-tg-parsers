@@ -14,7 +14,7 @@ from utils.exceptions.parsers import ParserNoUrlsError
 @dataclass
 class ReportBakuParser(BaseParser):
     request_object: BaseRequest
-    headers: dict = field(default_factory=lambda: headers)
+    headers: dict = None
     city: SiteModel = SiteModel.BAKU
     name: str = 'baku'
     __base_url = 'https://report.az'

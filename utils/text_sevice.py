@@ -14,11 +14,22 @@ def chunks_to_text(chunks: str) -> str:
     return caption
 
 
-def correct_caption_len(caption: str, city: str) -> str:
+def correct_caption_len(caption: str, city: str, language: str) -> str:
     length = 4000
 
-    city_hashtag_form = rename_city_to_hashtag_form(city)
-    hashtag_text = f'\n\n#Новости{city_hashtag_form.lower()}\n#{city_hashtag_form}'
+    city_hashtag_form: str = rename_city_to_hashtag_form(city)
+    hashtag_text = '\n\n'
+    if language == 'русском':  # noqa: SIM108
+        hashtag_text += '#Новости'
+        hashtag_text += f'{city_hashtag_form.lower()}\n#{city_hashtag_form}'
+    elif language == 'португальском':
+        hashtag_text += '#notícias'
+        hashtag_text += (f'{city_hashtag_form}\n'
+                         f'#{city_hashtag_form}\n'
+                         f'#notícias')
+    else:
+        hashtag_text += '#News'
+        hashtag_text += f'{city_hashtag_form.lower()}\n#{city_hashtag_form}'
 
     split_caption = caption.split('.')
     while len(caption) + len(hashtag_text) > length:

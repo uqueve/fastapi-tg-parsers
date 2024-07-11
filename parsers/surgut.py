@@ -1,5 +1,5 @@
 import asyncio
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from aiohttp import ClientSession
 from bs4 import BeautifulSoup
@@ -14,7 +14,7 @@ from utils.exceptions.parsers import ParserNoUrlsError
 @dataclass
 class SurgutParser(BaseParser):
     request_object: BaseRequest
-    headers: dict = field(default_factory=lambda: headers)
+    headers: dict = None
     city: SiteModel = SiteModel.SURGUT
     name: str = 'surgut'
     __base_url: str = 'https://sitv.ru'
